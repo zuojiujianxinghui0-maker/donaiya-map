@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="どないや">
+<link rel="apple-touch-icon" href="/icon_180.png">
+<link rel="manifest" href="/manifest.json">
+<link rel="icon" type="image/png" sizes="180x180" href="/icon_180.png">
+<title>どないや店舗ナビ</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#333;-webkit-font-smoothing:antialiased}
+.header{background:#E60012;color:#fff;padding:16px;text-align:center;font-size:20px;font-weight:bold;position:sticky;top:0;z-index:10;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+.header-sub{font-size:12px;opacity:.8;font-weight:normal;margin-top:2px}
+.search-wrap{padding:12px 16px;background:#f5f5f5}
+.search-wrap input{width:100%;padding:12px 16px;border:1px solid #ddd;border-radius:24px;font-size:16px;outline:none;background:#fff}
+.search-wrap input:focus{border-color:#E60012}
+.count-badge{text-align:center;padding:8px;font-size:14px;color:#666;background:#fafafa;border-bottom:1px solid #eee}
+.count-badge span{font-weight:bold;color:#E60012;font-size:18px}
+.stores{list-style:none;padding:0}
+.store{padding:16px;border-bottom:1px solid #eee;cursor:pointer;transition:background .15s}
+.store:active,.store:hover{background:#fef2f2}
+.store-name{font-size:17px;font-weight:bold;color:#222}
+.store-area{font-size:13px;color:#999;margin-top:2px}
+.store-addr{font-size:14px;color:#555;margin-top:4px;padding-left:4px;border-left:3px solid #E60012}
+.store-actions{margin-top:8px;display:flex;gap:8px}
+.store-actions a{text-decoration:none;font-size:13px;padding:4px 12px;border-radius:16px;background:#E60012;color:#fff}
+.store-actions a.dir{background:#fff;color:#E60012;border:1px solid #E60012}
+.install-banner{background:#f0f0f0;text-align:center;padding:10px;font-size:12px;color:#666;border-bottom:1px solid #eee}
+.empty{text-align:center;padding:60px 20px;color:#999;font-size:16px}
+.footer{text-align:center;padding:20px;font-size:12px;color:#999;background:#fafafa}
+</style>
+</head>
+<body>
+<div class="header">
+  どないや店舗ナビ
+  <div class="header-sub">📍 たこ焼き どないや 店舗検索</div>
+</div>
+<div class="install-banner">📲 ホーム画面に追加でアプリとして使えます</div>
+<div class="search-wrap">
+  <input type="text" id="search" placeholder="🔍 店舗名・エリアで検索" oninput="filterStores()">
+</div>
+<div class="count-badge"><span id="count">60</span>店舗</div>
+<ul class="stores" id="storeList"></ul>
+<div class="footer">© どないや</div>
+<script>
+const stores = [
+{name:"おかえりなさい",area:"池袋",addr:"東京都豊島区西池袋1-37-2 竜崎ビル2・3・4F",lat:35.7291,lng:139.713,bldg:"竜崎ビル"},
+{name:"vivid cafe",area:"池袋",addr:"東京都豊島区西池袋1-42-8 秋福ビルB1F",lat:35.7291,lng:139.7125,bldg:"秋福ビル"},
+{name:"どないや 渋谷店",area:"渋谷",addr:"東京都渋谷区道玄坂1-12-1",lat:35.6563,lng:139.6982},
+{name:"どないや 新宿店",area:"新宿",addr:"東京都新宿区新宿3-28-1",lat:35.6907,lng:139.7027},
+{name:"どないや 上野店",area:"上野",addr:"東京都台東区上野4-8-1",lat:35.7101,lng:139.7732},
+{name:"どないや 秋葉原店",area:"秋葉原",addr:"東京都千代田区外神田1-15-1",lat:35.6998,lng:139.7714},
+{name:"どないや 銀座店",area:"銀座",addr:"東京都中央区銀座5-8-1",lat:35.6717,lng:139.7649},
+{name:"どないや 六本木店",area:"六本木",addr:"東京都港区六本木6-10-1",lat:35.6605,lng:139.7292},
+{name:"どないや 表参道店",area:"表参道",addr:"東京都港区北青山3-5-1",lat:35.6651,lng:139.7106}
+];
+function render(list){
+  const ul = document.getElementById('storeList');
+  const count = document.getElementById('count');
+  count.textContent = list.length;
+  if(list.length===0){
+    ul.innerHTML = '<li class="empty">🔍 該当する店舗がありません</li>';
+    return;
+  }
+  ul.innerHTML = list.map(s=>`
+    <li class="store">
+      <div class="store-name">${s.name}</div>
+      <div class="store-area">${s.area}</div>
+      <div class="store-addr">${s.addr}</div>
+      <div class="store-actions">
+        <a href="https://www.google.com/maps/dir/?api=1&destination=${s.lat},${s.lng}" target="_blank">🚶 経路</a>
+        <a class="dir" href="https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(s.name)}" target="_blank">📍 場所</a>
+      </div>
+    </li>
+  `).join('');
+}
+render(stores);
+function filterStores(){
+  const q = document.getElementById('search').value.toLowerCase();
+  render(stores.filter(s=>s.name.toLowerCase().includes(q)||s.area.toLowerCase().includes(q)||s.addr.toLowerCase().includes(q)));
+}
+</script>
+</body>
+</html>
