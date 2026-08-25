@@ -1,1 +1,17 @@
-{"name":"どないや店舗ナビ","short_name":"どないや","start_url":"/","display":"standalone","background_color":"#E60012","theme_color":"#E60012","icons":[{"src":"/icon_180.png","sizes":"180x180","type":"image/png"}]}
+{
+  "name": "どないや店舗ナビ",
+  "short_name": "どないや",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#E60012",
+  "theme_color": "#E60012",
+  "description": "池袋エリア どないや お店マップ",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
