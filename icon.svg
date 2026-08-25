@@ -1,17 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <!-- 赤丸 -->
   <circle cx="256" cy="256" r="248" fill="#E60012"/>
-  <!-- 黒枠の白楕円 -->
-  <ellipse cx="256" cy="256" rx="175" ry="130" fill="white" stroke="black" stroke-width="8"/>
-  <!-- 上部中央：元祖（赤背景白文字・黒枠） -->
-  <rect x="190" y="95" width="85" height="35" fill="#CC0000" stroke="black" stroke-width="2.5"/>
-  <text x="232" y="120" font-family="'Noto Serif JP', serif" font-size="24" fill="white" text-anchor="middle" font-weight="bold">元祖</text>
-  <!-- ど（筆文字風・黒・左側） -->
-  <text x="165" y="300" font-family="'Noto Serif JP', 'Hiragino Mincho ProN', serif" font-size="130" fill="black" font-weight="900">ど</text>
-  <!-- な（筆文字風・黒・中央・小さめ） -->
-  <text x="245" y="285" font-family="'Noto Serif JP', 'Hiragino Mincho ProN', serif" font-size="80" fill="black" font-weight="bold">な</text>
-  <!-- や（筆文字風・赤・右側・大きめ） -->
-  <text x="315" y="280" font-family="'Noto Serif JP', 'Hiragino Mincho ProN', serif" font-size="140" fill="#E60012" font-weight="900">や</text>
-  <!-- TAKOYAKI（下中央） -->
-  <text x="256" y="365" font-family="Arial, sans-serif" font-size="34" fill="black" font-weight="bold" letter-spacing="2" text-anchor="middle">TAKOYAKI</text>
+  <ellipse cx="256" cy="262" rx="178" ry="132" fill="white" stroke="black" stroke-width="7"/>
+  <rect x="183" y="138" width="90" height="36" rx="2" ry="2" fill="#CC0000" stroke="black" stroke-width="2.5"/>
+  <text x="228" y="165" font-family="'Noto Sans JP','Hiragino Sans','Yu Gothic',sans-serif" font-size="28" fill="black" text-anchor="middle" font-weight="900">元祖</text>
+  <text x="150" y="310" font-family="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif" font-size="145" fill="black" font-weight="900">ど</text>
+  <text x="250" y="295" font-family="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif" font-size="90" fill="black" font-weight="bold">な</text>
+  <text x="290" y="305" font-family="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif" font-size="75" fill="black" font-weight="bold">い</text>
+  <text x="345" y="300" font-family="'Noto Serif JP','Hiragino Mincho ProN','Yu Mincho',serif" font-size="150" fill="#E60012" font-weight="900">や</text>
+  <text x="256" y="400" font-family="Arial,Helvetica,sans-serif" font-size="38" fill="black" text-anchor="middle" font-weight="bold" letter-spacing="3">TAKOYAKI</text>
 </svg>
