@@ -114,27 +114,23 @@ function toKata(s){
 function toHira(s){
   return s.replace(/[ァ-ヶ]/g, function(c){return String.fromCharCode(c.charCodeAt(0)-0x60);});
 }
-function normalize(s){
-  return s.toLowerCase() + ' ' + toKata(s.toLowerCase()) + ' ' + toHira(s.toLowerCase());
-}
 function scoreMatch(q, text){
   if(!q || !text) return 0;
-  const nq = normalize(q);
-  const nt = normalize(text);
-  if(nt.includes(nq)) return 300;
-  const nqPlain = q.toLowerCase();
-  const ntPlain = text.toLowerCase();
-  if(ntPlain.includes(nqPlain)) return 200;
-  if(toKata(ntPlain).includes(toKata(nqPlain))) return 150;
-  if(toHira(ntPlain).includes(toHira(nqPlain))) return 150;
-  let score = 0;
-  for(let i=0;i<nqPlain.length;i++){
-    const ch = nqPlain[i];
-    const chKata = toKata(ch);
-    const chHira = toHira(ch);
-    if(ntPlain.includes(ch)) score += 15;
-    else if(toKata(ntPlain).includes(chKata)) score += 10;
-    else if(toHira(ntPlain).includes(chHira)) score += 10;
+  var ql = q.toLowerCase();
+  var tl = text.toLowerCase();
+  var qk = toKata(ql);
+  var qh = toHira(ql);
+  var tk = toKata(tl);
+  var th = toHira(tl);
+  if(tl.indexOf(ql) >= 0) return 200;
+  if(tk.indexOf(qk) >= 0) return 150;
+  if(th.indexOf(qh) >= 0) return 150;
+  var score = 0;
+  for(var i=0;i<ql.length;i++){
+    var c = ql[i];
+    if(tl.indexOf(c) >= 0) score += 15;
+    else if(tk.indexOf(toKata(c)) >= 0) score += 15;
+    else if(th.indexOf(toHira(c)) >= 0) score += 15;
   }
   return score;
 }
