@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="icon" type="image/png" sizes="192x192" href="icon_192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon_180.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icon_180.png">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="どないやBARマップ">
 <title>どないやBARマップ</title>
@@ -234,7 +237,7 @@ return s.toLowerCase()
 .replace(/[ァ-ヶ]/g,c=>String.fromCharCode(c.charCodeAt(0)-0x60))
 .normalize('NFD').replace(/[ー―‐]/g,'')
 .replace(/[ぁぃぅぇぉっゃゅょ]/g,c=>{const m={ぁ:'あ',ぃ:'い',ぅ:'う',ぇ:'え',ぉ:'お',っ:'つ',ゃ:'や',ゅ:'ゆ',ょ:'よ'};return m[c]||c})
-.replace(/[\s　]/g,'');
+.replace(/[\s\u3000]/g,'');
 }
 
 let idx;
