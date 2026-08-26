@@ -6,7 +6,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="120x120" href="icon-180.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
 <link rel="manifest" href="manifest.json">
 <title>どないや店舗ナビ</title>
 <style>
@@ -45,6 +45,14 @@ body{background:#1a1a2e;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
 .footer a{color:#7ec8e3;text-decoration:none}
 .tag{display:inline-block;background:#1a3a2a;color:#4ade80;padding:0 5px;border-radius:3px;font-size:9px;margin-left:3px}
 </style>
+<link rel="icon" type="image/png" sizes="60x60" href="icon-60.png">
+<link rel="icon" type="image/png" sizes="120x120" href="icon-120.png">
+<link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+<link rel="apple-touch-icon" sizes="60x60" href="icon-60.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 </head>
 <body>
 
@@ -314,6 +322,11 @@ searchInput.addEventListener('input',function(){doSearch(this.value)});
 function showAll(){searchInput.value='';render(SHOPS)}
 
 render(SHOPS);
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js');
+}
 </script>
 </body>
 </html>
