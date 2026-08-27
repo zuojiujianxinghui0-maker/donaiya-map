@@ -76,7 +76,7 @@ body{background:#1a1a2e;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
 <span>|</span>
 <a href="https://www.google.com/maps/d/u/0/viewer?mid=1R3-Y8rq4XG4rQvqP1t5a8jV4o0y9wW4&ll=35.732,139.712&z=15" target="_blank">Googleマイマップ</a>
 <span>|</span>
-<span>49店舗</span>
+<span>80店舗</span>
 </div>
 
 <script>
@@ -100,7 +100,7 @@ const SHOPS=[
   {name:'クラブアルカナ',lat:35.7301653,lng:139.709385,bldg:'ロイヤル西池袋',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
   {name:'R',lat:35.7358426,lng:139.7084043,bldg:'江戸半第3パレス',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
   {name:'コンカフェ Anokoro Memories',lat:35.7301653,lng:139.709385,bldg:'アオイビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'AGASA',lat:35.7358426,lng:139.7084043,bldg:'葉山ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'AGASA',lat:35.7301653,lng:139.709385,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
   {name:'AIR PORT IKB',lat:35.7301653,lng:139.709385,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
   {name:'アイリス',lat:35.7358426,lng:139.7084043,bldg:'ザバレルビル池袋',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
   {name:'アルドーレ',lat:35.7301653,lng:139.709385,bldg:'マキビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
@@ -144,6 +144,37 @@ const SHOPS=[
   {name:'ミセスジェイ',lat:35.7301653,lng:139.709385,bldg:'ksビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
   {name:'ラス',lat:35.7358426,lng:139.7084043,bldg:'第1絆ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
   {name:'ラナ',lat:35.73452,lng:139.7099304,bldg:'第3絆ビル',url:'https://maps.google.com/maps?q=35.73452,139.7099304'},
+  {name:'プチミニヨン',lat:35.7296839,lng:139.7162331,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7296839,139.7162331'},
+  {name:'ホテルトトロ',lat:35.7363563,lng:139.7176348,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
+  {name:'Shula'na Sports Concept Bar',lat:35.7301653,lng:139.709385,bldg:'TYビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'新珍味',lat:35.7320419,lng:139.7099449,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7320419,139.7099449'},
+  {name:'GOLD CHIHUAHUA 2nd',lat:35.7358426,lng:139.7084043,bldg:'ダイコウ8ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'NATALIS(ナタリス)',lat:35.7327424,lng:139.7104544,bldg:'天幸ビル',url:'https://maps.google.com/maps?q=35.7327424,139.7104544'},
+  {name:'隠れBARギルド',lat:35.7363563,lng:139.7176348,bldg:'ホワイトビル',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
+  {name:'Hyakka',lat:35.7358426,lng:139.7084043,bldg:'本州ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'La Chance',lat:35.7358426,lng:139.7084043,bldg:'あけぼのビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'AmusementBar Pino by SABON',lat:35.7358426,lng:139.7084043,bldg:'徳永第三ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'みつばちマーヤZ',lat:35.7301653,lng:139.709385,bldg:'第1大谷ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'麻雀チャイナ池袋店',lat:35.7290721,lng:139.7209701,bldg:'TⅡビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'麺処花田池袋店',lat:35.7311554,lng:139.7149383,bldg:'ISKビル',url:'https://maps.google.com/maps?q=35.7311554,139.7149383'},
+  {name:'クラブ美南',lat:35.7312086,lng:139.7066415,bldg:'梅本ビル',url:'https://maps.google.com/maps?q=35.7312086,139.7066415'},
+  {name:'SECOND',lat:35.7290721,lng:139.7209701,bldg:'大国屋10池袋ビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'Hello Heaven',lat:35.7301653,lng:139.709385,bldg:'青井ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ミュウミュウ',lat:35.7284313,lng:139.7017131,bldg:'YSステージ',url:'https://maps.google.com/maps?q=35.7284313,139.7017131'},
+  {name:'夢幻泡影',lat:35.7340006,lng:139.7088419,bldg:'グランディアビル',url:'https://maps.google.com/maps?q=35.7340006,139.7088419'},
+  {name:'不死鳥',lat:35.7358426,lng:139.7084043,bldg:'岸野ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'Chill',lat:35.7358426,lng:139.7084043,bldg:'梶ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'VENUS',lat:35.7301653,lng:139.709385,bldg:'東通ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'Bar Mi Casita',lat:35.7358426,lng:139.7084043,bldg:'豊ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'DAHLIA',lat:35.7290721,lng:139.7209701,bldg:'東京第3ビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'レガート',lat:35.7358426,lng:139.7084043,bldg:'ザバレルビル池袋',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'天使.com',lat:35.7329764,lng:139.7103618,bldg:'エスペランザ池袋',url:'https://maps.google.com/maps?q=35.7329764,139.7103618'},
+  {name:'cocotto',lat:35.732838,lng:139.709672,bldg:'ウエストコア',url:'https://maps.google.com/maps?q=35.732838,139.709672'},
+  {name:'Night Blood',lat:35.7358426,lng:139.7084043,bldg:'12ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ガールズバーリゾートセカンド',lat:35.7331777,lng:139.7120551,bldg:'邦正ビル',url:'https://maps.google.com/maps?q=35.7331777,139.7120551'},
+  {name:'NEW KAWAII',lat:35.7301653,lng:139.709385,bldg:'東通ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ポレポレ',lat:35.7358426,lng:139.7084043,bldg:'越路ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'Puchimini academy',lat:35.7358426,lng:139.7084043,bldg:'光陽ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
 ];
 
 const list=document.getElementById('list');
