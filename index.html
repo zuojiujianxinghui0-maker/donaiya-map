@@ -76,7 +76,7 @@ body{background:#1a1a2e;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
 <span>|</span>
 <a href="https://www.google.com/maps/d/u/0/viewer?mid=1R3-Y8rq4XG4rQvqP1t5a8jV4o0y9wW4&ll=35.732,139.712&z=15" target="_blank">Googleマイマップ</a>
 <span>|</span>
-<span>79店舗</span>
+<span>80店舗</span>
 </div>
 
 <script>
@@ -84,7 +84,8 @@ const BLDG_YOMI={
 '池袋駅':'イケブクロエキ','ルミネ':'ルミネ','パルコ':'パルコ','東武百貨店':'トウブヒャッカテン','西武百貨店':'セイブヒャッカテン','サンシャインシティ':'サンシャインシティ','サンシャイン60':'サンシャインロクジュウ','シネマサンシャイン':'シネマサンシャイン','ホテルメトロポリタン':'ホテルメトロポリタン','メトロポリタンプラザ':'メトロポリタンプラザ','Esola':'エソラ','Ikebukuro':'イケブクロ','エチカ':'エチカ','東口':'ヒガシグチ','西口':'ニシグチ','南口':'ミナミグチ','北口':'キタグチ','東武ホープセンター':'トウブホープセンター','東京芸術劇場':'トウキョウゲイジュツゲキジョウ','Hareza池袋':'ハレザイケブクロ','大塚':'オオツカ','新大塚':'シンオオツカ','椎名町':'シイナマチ','要町':'カナメチョウ','池袋仲通り':'イケブクロナカドオリ','池袋西口公園':'イケブクロニシグチコウエン','池袋東口':'イケブクロヒガシグチ','池袋駅前':'イケブクロエキマエ','池袋サンシャイン':'イケブクロサンシャイン','雑司が谷':'ゾウシガヤ','目白':'メジロ','護国寺':'ゴコクジ','江戸川橋':'エドガワバシ','茗荷谷':'ミョウガダニ'
 };
 
-const CENTER=[35.733624,139.709896];
+const CENTER=[35.733624,139.709896  lat:35.7301653,lng:139.7093850,bldg:'竜崎ビル',url:'https://maps.google.com/maps?q=35.7301653,139.7093850'},
+];
 const DIST_THRESHOLDS={near:200,mid:400};
 
 function norm(s){return s.replace(/[\s　]/g,'').replace(/[\uFF61-\uFF9F]/g,function(m){return String.fromCharCode(m.charCodeAt(0)-0xFEE0)}).toLowerCase()}
@@ -174,6 +175,7 @@ const SHOPS=[
   {name:'NEW KAWAII',lat:35.7301653,lng:139.709385,bldg:'東通ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
   {name:'ポレポレ',lat:35.7358426,lng:139.7084043,bldg:'越路ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
   {name:'Puchimini academy',lat:35.7358426,lng:139.7084043,bldg:'光陽ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'おかえりなさい',lat:35.7301653,lng:139.7093850,bldg:'竜崎ビル',url:'https://maps.google.com/maps?q=35.7301653,139.7093850'},
 ];
 
 const list=document.getElementById('list');
