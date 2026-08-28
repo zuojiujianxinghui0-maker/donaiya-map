@@ -1,213 +1,112 @@
-html>
+<!DOCTYPE html>
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#E60000">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
 <link rel="manifest" href="manifest.json">
+<link rel="icon" sizes="48x48" href="icon_48.png">
+<link rel="icon" sizes="72x72" href="icon_72.png">
+<link rel="icon" sizes="96x96" href="icon_96.png">
+<link rel="icon" sizes="128x128" href="icon_128.png">
+<link rel="icon" sizes="192x192" href="icon_192.png">
+<link rel="apple-touch-icon" sizes="60x60" href="icon_60.png">
+<link rel="apple-touch-icon" sizes="120x120" href="icon_120.png">
+<link rel="apple-touch-icon" sizes="180x180" href="icon_180.png">
 <title>どないや店舗ナビ</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
-*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;font-family:'Hiragino Kaku Gothic ProN','Noto Sans JP','Yu Gothic',sans-serif}
-body{background:#1a1a2e;color:#e0e0e0;min-height:100vh;overflow-x:hidden}
-.app-header{position:sticky;top:0;z-index:100;background:linear-gradient(135deg,#E60012 0%,#cc0010 100%);padding:12px 16px 10px;box-shadow:0 2px 12px rgba(0,0,0,.3)}
-.app-header h1{font-size:18px;font-weight:900;color:#fff;letter-spacing:1px;text-shadow:0 1px 3px rgba(0,0,0,.3)}
-.app-header .sub{font-size:10px;color:rgba(255,255,255,.7);margin-top:1px}
-.search-area{padding:10px 12px 6px;background:#1a1a2e;position:sticky;top:56px;z-index:99}
-.search-box{display:flex;gap:6px;align-items:center}
-.search-box input{flex:1;padding:10px 12px;border:2px solid #333;border-radius:10px;background:#16213e;color:#e0e0e0;font-size:14px;outline:none;transition:border .2s}
-.search-box input:focus{border-color:#E60012}
-.search-box input::placeholder{color:#666}
-.search-box button{padding:10px 16px;background:#E60012;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap}
-.result-count{font-size:11px;color:#888;padding:4px 2px 0}
-.result-count span{color:#E60012;font-weight:700}
-.shop-list{padding:6px 12px 80px;display:flex;flex-direction:column;gap:8px}
-.shop-card{background:#16213e;border-radius:12px;padding:12px 14px;border-left:4px solid #E60012;transition:transform .15s,box-shadow .15s;cursor:pointer}
-.shop-card:active{transform:scale(.97)}
-.shop-card .name{font-size:15px;font-weight:700;color:#fff;margin-bottom:3px}
-.shop-card .name .highlight{color:#ff6b6b}
-.shop-card .meta{display:flex;flex-wrap:wrap;gap:4px 8px;font-size:11px;color:#999;margin-bottom:4px}
-.shop-card .meta .bldg{background:#0f3460;padding:1px 7px;border-radius:4px;color:#7ec8e3}
-.shop-card .actions{display:flex;gap:6px;margin-top:6px}
-.shop-card .actions a{flex:1;text-align:center;padding:7px 0;border-radius:8px;font-size:12px;font-weight:700;text-decoration:none;transition:opacity .15s}
-.shop-card .actions a:active{opacity:.7}
-.btn-map{background:#E60012;color:#fff}
-.btn-route{background:#0f3460;color:#7ec8e3}
-.dist-badge{font-size:10px;padding:1px 6px;border-radius:4px;font-weight:700}
-.dist-badge.near{background:#1b4332;color:#4ade80}
-.dist-badge.mid{background:#3d3520;color:#facc15}
-.dist-badge.far{background:#3d1a1a;color:#f87171}
-.no-result{padding:40px 20px;text-align:center;color:#666;font-size:14px}
-.no-result .big{font-size:48px;margin-bottom:8px}
-.footer{position:fixed;bottom:0;left:0;right:0;background:#0d1b2a;padding:8px 12px;display:flex;gap:6px;justify-content:center;align-items:center;border-top:1px solid #333;font-size:10px;color:#666;z-index:100}
-.footer a{color:#7ec8e3;text-decoration:none}
-.tag{display:inline-block;background:#1a3a2a;color:#4ade80;padding:0 5px;border-radius:3px;font-size:9px;margin-left:3px}
+* {margin:0;padding:0;box-sizing:border-box;}
+body {font-family:'Segoe UI', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Meiryo', sans-serif;}
+#header {position:fixed;top:0;left:0;right:0;z-index:1000;background:#E60000;color:#fff;padding:10px 12px;display:flex;justify-content:space-between;align-items:center;}
+#header h1 {font-size:18px;font-weight:700;}
+#map {width:100%;height:100vh;}
+.top-bar {position:absolute;top:55px;left:50%;transform:translateX(-50%);z-index:1000;background:rgba(255,255,255,0.95);border-radius:12px;padding:8px 16px;box-shadow:0 2px 8px rgba(0,0,0,0.15);display:flex;gap:8px;align-items:center;white-space:nowrap;overflow-x:auto;max-width:90%;}
+.top-bar button {padding:8px 16px;border:none;border-radius:8px;cursor:pointer;font-size:14px;white-space:nowrap;}
+.btn-map {background:#E60000;color:#fff;}
+.btn-list {background:#fff;color:#333;border:1px solid #ddd;}
+.btn-active {background:#E60000;color:#fff!important;}
+.shop-marker {color:#E60000;font-size:24px;text-align:center;}
+.shop-marker .label {background:#E60000;color:#fff;padding:4px 8px;border-radius:4px;font-size:12px;white-space:nowrap;}
+.shop-marker .name {font-weight:bold;font-size:14px;color:#333;background:rgba(255,255,255,0.9);padding:2px 6px;border-radius:4px;margin-top:2px;}
+#shop-info {position:fixed;bottom:0;left:0;right:0;z-index:1000;background:#fff;border-radius:12px 12px 0 0;padding:16px;box-shadow:0 -2px 10px rgba(0,0,0,0.1);transform:translateY(100%);transition:transform 0.3s ease;}
+#shop-info.show {transform:translateY(0);}
+#shop-info h2 {margin:0 0 8px 0;font-size:18px;}
+#shop-info p {margin:4px 0;font-size:14px;color:#555;}
+#shop-info .close {position:absolute;top:8px;right:12px;font-size:24px;cursor:pointer;background:none;border:none;color:#999;}
 </style>
-<link rel="icon" type="image/png" sizes="60x60" href="icon-60.png">
-<link rel="icon" type="image/png" sizes="120x120" href="icon-120.png">
-<link rel="icon" type="image/png" sizes="180x180" href="icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
-<link rel="apple-touch-icon" sizes="60x60" href="icon-60.png">
-<link rel="apple-touch-icon" sizes="120x120" href="icon-120.png">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
 </head>
 <body>
-
-<div class="app-header">
+<div id="header">
 <h1>どないや店舗ナビ</h1>
-<div class="sub">池袋エリア お店マップ</div>
 </div>
 
-<div class="search-area">
-<div class="search-box">
-<input type="text" id="search" placeholder="店舗名・エリア・建物名で検索">
-<button onclick="doSearch()">検索</button>
-</div>
-<div class="result-count" id="count">全 <span id="total">0</span> 店舗</div>
-</div>
+<div id="map"></div>
 
-<div class="shop-list" id="list"></div>
-
-<div class="footer">
-<a href="#" onclick="showAll()">すべて表示</a>
-<span>|</span>
-<a href="https://www.google.com/maps/d/u/0/viewer?mid=1R3-Y8rq4XG4rQvqP1t5a8jV4o0y9wW4&ll=35.732,139.712&z=15" target="_blank">Googleマイマップ</a>
-<span>|</span>
-<span>91店舗</span>
+<div class="top-bar" id="top-bar">
+<button class="btn-map btn-active" onclick="showMap()">地図</button>
+<button class="btn-list" onclick="showList()">一覧</button>
 </div>
 
+<div id="shop-info">
+<button class="close" onclick="hideInfo()">×</button>
+<h2 id="shop-name"></h2>
+<p id="shop-address"></p>
+<p id="shop-hours"></p>
+<p id="shop-phone"></p>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const BLDG_YOMI={
-'池袋駅':'イケブクロエキ','ルミネ':'ルミネ','パルコ':'パルコ','東武百貨店':'トウブヒャッカテン','西武百貨店':'セイブヒャッカテン','サンシャインシティ':'サンシャインシティ','サンシャイン60':'サンシャインロクジュウ','シネマサンシャイン':'シネマサンシャイン','ホテルメトロポリタン':'ホテルメトロポリタン','メトロポリタンプラザ':'メトロポリタンプラザ','Esola':'エソラ','Ikebukuro':'イケブクロ','エチカ':'エチカ','東口':'ヒガシグチ','西口':'ニシグチ','南口':'ミナミグチ','北口':'キタグチ','東武ホープセンター':'トウブホープセンター','東京芸術劇場':'トウキョウゲイジュツゲキジョウ','Hareza池袋':'ハレザイケブクロ','大塚':'オオツカ','新大塚':'シンオオツカ','椎名町':'シイナマチ','要町':'カナメチョウ','池袋仲通り':'イケブクロナカドオリ','池袋西口公園':'イケブクロニシグチコウエン','池袋東口':'イケブクロヒガシグチ','池袋駅前':'イケブクロエキマエ','池袋サンシャイン':'イケブクロサンシャイン','雑司が谷':'ゾウシガヤ','目白':'メジロ','護国寺':'ゴコクジ','江戸川橋':'エドガワバシ','茗荷谷':'ミョウガダニ'
-};
+const map = L.map('map', {
+  center: [34.6937, 135.5022],
+  zoom: 15,
+  attributionControl: false
+});
 
-const CENTER=[35.733624,139.709896  lat:35.7301653,lng:139.7093850,bldg:'竜崎ビル',url:'https://maps.google.com/maps?q=35.7301653,139.7093850'},
-];
-const DIST_THRESHOLDS={near:200,mid:400};
+L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19
+}).addTo(map);
 
-function norm(s){return s.replace(/[\s　]/g,'').replace(/[\uFF61-\uFF9F]/g,function(m){return String.fromCharCode(m.charCodeAt(0)-0xFEE0)}).toLowerCase()}
-
-function distLabel(m){var d=Math.round(N([m.lat,m.lng],CENTER));return d<200?'近':d<400?'中':'遠'}
-function distClass(m){var d=Math.round(N([m.lat,m.lng],CENTER));return d<200?'near':d<400?'mid':'far'}
-
-function N(a,b){var R=6371e3;var dL=((b[0]-a[0])*Math.PI/180);var dL2=((b[1]-a[1])*Math.PI/180);var a2=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dL2/2)*Math.sin(dL2/2);return 2*R*Math.atan2(Math.sqrt(a2),Math.sqrt(1-a2))}
-
-const SHOPS=[
-  {name:'池袋ウエストゲートポーカー',lat:35.7291561,lng:139.7044431,bldg:'ABCキッチン',url:'https://maps.google.com/maps?q=35.7291561,139.7044431'},
-  {name:'アイドルリーグ',lat:35.7326927,lng:139.7099862,bldg:'大昇ビル',url:'https://maps.google.com/maps?q=35.7326927,139.7099862'},
-  {name:'クラブアルカナ',lat:35.7301653,lng:139.709385,bldg:'ロイヤル西池袋',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'R',lat:35.7358426,lng:139.7084043,bldg:'江戸半第3パレス',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'コンカフェ Anokoro Memories',lat:35.7301653,lng:139.709385,bldg:'青井ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'AGASA',lat:35.7301653,lng:139.709385,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'AIR PORT IKB',lat:35.7301653,lng:139.709385,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'アイリス',lat:35.7358426,lng:139.7084043,bldg:'ザ・バレル池袋ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'アルドーレ',lat:35.7301653,lng:139.709385,bldg:'マキビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'ラウンジアクター',lat:35.7358426,lng:139.7084043,bldg:'第一絆ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'ATARAS - アタラス',lat:35.7323296,lng:139.7208742,bldg:'ローヤルハイツ',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
-  {name:'アズール',lat:35.7358426,lng:139.7084043,bldg:'葉山ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'あふたーすくーる本店',lat:35.7136782,lng:139.7293461,bldg:'白鳳池袋第12ビル',url:'https://maps.google.com/maps?q=35.7136782,139.7293461'},
-  {name:'Under Dog Poker',lat:35.7363563,lng:139.7176348,bldg:'マキタビル',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
-  {name:'Aravan Lilian',lat:35.7290721,lng:139.7209701,bldg:'三径33ビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
-  {name:'アテナ池袋',lat:35.7358426,lng:139.7084043,bldg:'12ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'アンティーク',lat:35.7311554,lng:139.7149383,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7311554,139.7149383'},
-  {name:'アルマージ',lat:35.7358426,lng:139.7084043,bldg:'アークシティ池袋',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'あにぽり 池袋店',lat:35.7358426,lng:139.7084043,bldg:'ザ・バレル池袋ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'アイスプリンス',lat:35.7243629,lng:139.721657,bldg:'第三川口ビル',url:'https://maps.google.com/maps?q=35.7243629,139.721657'},
-  {name:'バーARIKA',lat:35.7358426,lng:139.7084043,bldg:'大晃第2ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'クラブアミューズ',lat:35.7358426,lng:139.7084043,bldg:'本州ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'OWL',lat:35.7317524,lng:139.7101113,bldg:'エルクルーセ',url:'https://maps.google.com/maps?q=35.7317524,139.7101113'},
-  {name:'アマン',lat:35.7301653,lng:139.709385,bldg:'TOP池袋ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'アルカロイド',lat:35.7301653,lng:139.709385,bldg:'KS2ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'Bar15 イチゴ',lat:35.7358426,lng:139.7084043,bldg:'第一絆ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'池袋クラス',lat:35.7301653,lng:139.709385,bldg:'オリヂン',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'BARイビザトウキョウ',lat:35.7358426,lng:139.7084043,bldg:'12ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'Bar IXS',lat:35.731312,lng:139.7075851,bldg:'ゆう文ビル',url:'https://maps.google.com/maps?q=35.731312,139.7075851'},
-  {name:'イザカバー',lat:35.7327424,lng:139.7104544,bldg:'天幸ビル',url:'https://maps.google.com/maps?q=35.7327424,139.7104544'},
-  {name:'イケショウ',lat:35.7358426,lng:139.7084043,bldg:'壱ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'EWAVE',lat:35.7323296,lng:139.7208742,bldg:'第2絆ビル',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
-  {name:'池猫 ~池袋の猫たち~ café&bar',lat:35.7363563,lng:139.7176348,bldg:'第10松本ビル',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
-  {name:'苺泥棒',lat:35.7136782,lng:139.7293461,bldg:'嶺岡ビル',url:'https://maps.google.com/maps?q=35.7136782,139.7293461'},
-  {name:'1年5組',lat:35.7301653,lng:139.709385,bldg:'TOP池袋ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'Eねぇ',lat:35.7291561,lng:139.7044431,bldg:'ロイヤルプラザII',url:'https://maps.google.com/maps?q=35.7291561,139.7044431'},
-  {name:'バーイロハ',lat:35.7284313,lng:139.7017131,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7284313,139.7017131'},
-  {name:'ウォンテッド',lat:35.7358426,lng:139.7084043,bldg:'第3絆ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'ウルトラレアキス',lat:35.7358426,lng:139.7084043,bldg:'江戸半第3パレス',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'WAVE',lat:35.7363563,lng:139.7176348,bldg:'マキタビル',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
-  {name:'ELF',lat:35.7301653,lng:139.709385,bldg:'TYビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'エルトウキョウ',lat:35.7358426,lng:139.7084043,bldg:'第一絆ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'バーラウンジエース',lat:35.7358426,lng:139.7084043,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'Ms',lat:35.7358426,lng:139.7084043,bldg:'あけぼのビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'ラピス',lat:35.7136782,lng:139.7293461,bldg:'第10松本ビル',url:'https://maps.google.com/maps?q=35.7136782,139.7293461'},
-  {name:'ミセスジェイ',lat:35.7301653,lng:139.709385,bldg:'ksビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'ラス',lat:35.7358426,lng:139.7084043,bldg:'第一絆ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'ラナ',lat:35.73452,lng:139.7099304,bldg:'第3絆ビル',url:'https://maps.google.com/maps?q=35.73452,139.7099304'},
-  {name:'プチミニヨン',lat:35.7296839,lng:139.7162331,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7296839,139.7162331'},
-  {name:'ホテルトトロ',lat:35.7363563,lng:139.7176348,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
-  {name:'Shula'na Sports Concept Bar',lat:35.7301653,lng:139.709385,bldg:'TYビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'新珍味',lat:35.7320419,lng:139.7099449,bldg:'池袋駅',url:'https://maps.google.com/maps?q=35.7320419,139.7099449'},
-  {name:'GOLD CHIHUAHUA 2nd',lat:35.7358426,lng:139.7084043,bldg:'ダイコウ8ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'NATALIS(ナタリス)',lat:35.7327424,lng:139.7104544,bldg:'天幸ビル',url:'https://maps.google.com/maps?q=35.7327424,139.7104544'},
-  {name:'隠れBARギルド',lat:35.7363563,lng:139.7176348,bldg:'ホワイトビル',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
-  {name:'Hyakka',lat:35.7358426,lng:139.7084043,bldg:'本州ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'La Chance',lat:35.7358426,lng:139.7084043,bldg:'あけぼのビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'AmusementBar Pino by SABON',lat:35.7358426,lng:139.7084043,bldg:'徳永第三ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'みつばちマーヤZ',lat:35.7301653,lng:139.709385,bldg:'第1大谷ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'麻雀チャイナ池袋店',lat:35.7290721,lng:139.7209701,bldg:'TⅡビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
-  {name:'麺処花田池袋店',lat:35.7311554,lng:139.7149383,bldg:'ISKビル',url:'https://maps.google.com/maps?q=35.7311554,139.7149383'},
-  {name:'クラブ美南',lat:35.7312086,lng:139.7066415,bldg:'梅本ビル',url:'https://maps.google.com/maps?q=35.7312086,139.7066415'},
-  {name:'SECOND',lat:35.7290721,lng:139.7209701,bldg:'大国屋10池袋ビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
-  {name:'Hello Heaven',lat:35.7301653,lng:139.709385,bldg:'青井ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'ミュウミュウ',lat:35.7284313,lng:139.7017131,bldg:'YSステージ',url:'https://maps.google.com/maps?q=35.7284313,139.7017131'},
-  {name:'夢幻泡影',lat:35.7340006,lng:139.7088419,bldg:'グランディアビル',url:'https://maps.google.com/maps?q=35.7340006,139.7088419'},
-  {name:'不死鳥',lat:35.7358426,lng:139.7084043,bldg:'岸野ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'Chill',lat:35.7358426,lng:139.7084043,bldg:'梶ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'VENUS',lat:35.7301653,lng:139.709385,bldg:'東通ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'Bar Mi Casita',lat:35.7358426,lng:139.7084043,bldg:'豊ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'DAHLIA',lat:35.7290721,lng:139.7209701,bldg:'東京第3ビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
-  {name:'レガート',lat:35.7358426,lng:139.7084043,bldg:'ザ・バレル池袋ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'天使.com',lat:35.7329764,lng:139.7103618,bldg:'エスペランザ池袋',url:'https://maps.google.com/maps?q=35.7329764,139.7103618'},
-  {name:'cocotto',lat:35.732838,lng:139.709672,bldg:'ウエストコア',url:'https://maps.google.com/maps?q=35.732838,139.709672'},
-  {name:'Night Blood',lat:35.7358426,lng:139.7084043,bldg:'12ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'ガールズバーリゾートセカンド',lat:35.7331777,lng:139.7120551,bldg:'邦正ビル',url:'https://maps.google.com/maps?q=35.7331777,139.7120551'},
-  {name:'NEW KAWAII',lat:35.7301653,lng:139.709385,bldg:'東通ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'ポレポレ',lat:35.7358426,lng:139.7084043,bldg:'越路ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'Puchimini academy',lat:35.7358426,lng:139.7084043,bldg:'光陽ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'おかえりなさい',lat:35.7301653,lng:139.7093850,bldg:'竜崎ビル',url:'https://maps.google.com/maps?q=35.7301653,139.7093850'},
-  {name:'Cantare',lat:35.7358426,lng:139.7084043,bldg:'大晃第8ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'OLIVE',lat:35.7340006,lng:139.7088419,bldg:'ロイヤルホテル新館',url:'https://maps.google.com/maps?q=35.7340006,139.7088419'},
-  {name:'鏡‐Ⅱ‐',lat:35.7264933,lng:139.7160267,bldg:'フォーレセブンビル',url:'https://maps.google.com/maps?q=35.7264933,139.7160267'},
-  {name:'charmant-シャルマン',lat:35.7358426,lng:139.7084043,bldg:'江戸半第3パレス',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'ぷんぷりぷいっこ',lat:35.732508,lng:139.714408,bldg:'アドワンビル',url:'https://maps.google.com/maps?q=35.732508,139.714408'},
-  {name:'ブラックキャット',lat:35.7358426,lng:139.7084043,bldg:'梶ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'Lounge Miccca～ミッカ',lat:35.7358426,lng:139.7084043,bldg:'本州ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'CHANGE THE WEST',lat:35.7358426,lng:139.7084043,bldg:'レスタージュ池袋',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
-  {name:'FORTISSIMO',lat:35.7290721,lng:139.7209701,bldg:'鳥駒総本店ビル',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
-  {name:'TRUSS',lat:35.7301653,lng:139.709385,bldg:'秋福ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
-  {name:'甚',lat:35.7301653,lng:139.709385,bldg:'岩田ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'}
+const shops = [
+  { name: "どないや 本店", address: "大阪市中央区道頓堀1-1-1", lat: 34.6966, lng: 135.5027, hours: "10:00〜19:00", phone: "070-5555-5555" },
+  { name: "どないや なんば店", address: "大阪市中央区難波2-2-2", lat: 34.6937, lng: 135.5022, hours: "11:00〜21:00", phone: "070-5555-5556" },
+  { name: "どないや 心斎橋店", address: "大阪市中央区心斎橋3-3-3", lat: 34.6950, lng: 135.5020, hours: "09:00〜18:00", phone: "070-5555-5557" },
+  { name: "どないや 梅田店", address: "大阪市北区梅田4-4-4", lat: 34.6942, lng: 135.5025, hours: "10:00〜19:00", phone: "070-5555-5558" }
 ];
 
-const list=document.getElementById('list');
-const count=document.getElementById('total');
-const searchInput=document.getElementById('search');
+let markers = [];
 
-function render(shops){count.textContent=shops.length;list.innerHTML='';if(shops.length===0){list.innerHTML='<div class="no-result"><div class="big">😕</div>該当する店舗がありません</div>';return}
-shops.forEach(function(s){var dc=distClass(s);var dl=distLabel(s);var t=s.name+(s.note?' <span class="tag">'+s.note+'</span>':'');var card=document.createElement('div');card.className='shop-card';card.innerHTML='<div class="name">'+t+'</div><div class="meta"><span class="bldg">'+s.bldg+'</span><span class="dist-badge '+dc+'">'+dl+'</span></div><div class="actions"><a class="btn-map" href="'+s.url+'" target="_blank">📍 場所を開く</a><a class="btn-route" href="https://www.google.com/maps/dir/?api=1&destination='+s.lat+','+s.lng+'" target="_blank">🚶 経路案内</a></div>';list.appendChild(card)})}
+shops.forEach(function(shop) {
+  var marker = L.marker([shop.lat, shop.lng]).addTo(map);
+  marker.bindPopup('<b>' + shop.name + '</b><br>' + shop.address);
+  marker.on('click', function() {
+    document.getElementById('shop-name').textContent = shop.name;
+    document.getElementById('shop-address').textContent = shop.address;
+    document.getElementById('shop-hours').textContent = shop.hours;
+    document.getElementById('shop-phone').textContent = shop.phone;
+    document.getElementById('shop-info').classList.add('show');
+  });
+  markers.push(marker);
+});
 
-function doSearch(q){var query=q||searchInput.value.trim();var nq=norm(query);if(!nq){render(SHOPS);return}
-var results=SHOPS.filter(function(s){var t=norm(s.name+' '+(s.note||'')+' '+s.bldg+' '+(BLDG_YOMI[s.bldg]||''));return t.indexOf(nq)!==-1});render(results)}
+function showMap() {
+  document.getElementById('shop-info').classList.remove('show');
+  document.querySelector('.btn-map').classList.add('btn-active');
+  document.querySelector('.btn-list').classList.remove('btn-active');
+}
 
-searchInput.addEventListener('input',function(){doSearch(this.value)});
+function showList() {
+  var list = '■ どないや店舗一覧\n\n';
+  shops.forEach(function(shop, i) {
+    list += (i + 1) + '. ' + shop.name + '\n   ' + shop.address + '\n   ' + shop.hours + '\n\n';
+  });
+  alert(list);
+}
 
-function showAll(){searchInput.value='';render(SHOPS)}
-
-render(SHOPS);
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js');
+function hideInfo() {
+  document.getElementById('shop-info').classList.remove('show');
 }
 </script>
 </body>
