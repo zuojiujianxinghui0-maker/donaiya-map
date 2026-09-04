@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="theme-color" content="#CC1514">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="どないやマップ">
+<link rel="apple-touch-icon" sizes="180x180" href="icon_180.png">
+<link rel="icon" href="icon_192.png" type="image/png">
+<link rel="icon" href="favicon.ico" sizes="any">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<!-- 外部CSSが落ちても地図が壊れないよう、必須部分を内蔵 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+/* cdnjs が使えなかった場合の予備 */
+if(typeof L==='undefined'){
+  document.write('<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin><\/script>');
+  document.write('<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin>');
+}
+</script>
+<title>どないやマップ - 池袋バーマップ</title>
+<style>
+/* ===== Leaflet 必須CSS（外部CSSが読めなくても地図が成立するよう内蔵） ===== */
+.leaflet-pane,.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow,.leaflet-tile-container,
+.leaflet-pane>svg,.leaflet-pane>canvas,.leaflet-zoom-box,.leaflet-image-layer,.leaflet-layer{
+position:absolute;left:0;top:0}
+.leaflet-container{overflow:hidden;position:relative;-webkit-tap-highlight-color:transparent;
+background:#ddd;outline-offset:1px;font-family:inherit}
+.leaflet-tile,.leaflet-marker-icon,.leaflet-marker-shadow{-webkit-user-select:none;user-select:none;
+-webkit-user-drag:none;border:0}
+.leaflet-tile::selection{background:transparent}
+.leaflet-safari .leaflet-tile{image-rendering:-webkit-optimize-contrast}
+.leaflet-safari .leaflet-tile-container{width:1600px;height:1600px;-webkit-transform-origin:0 0}
+.leaflet-marker-icon,.leaflet-marker-shadow{display:block}
+.leaflet-container .leaflet-overlay-pane svg{max-width:none!important;max-height:none!important}
+.leaflet-container .leaflet-marker-pane img,.leaflet-container .leaflet-shadow-pane img,
+.leaflet-container .leaflet-tile-pane img,.leaflet-container img.leaflet-image-layer,
+.leaflet-container .leaflet-tile{max-width:none!important;max-height:none!important;width:auto;padding:0}
+.leaflet-container img.leaflet-tile{mix-blend-mode:normal}
+.leaflet-container.leaflet-touch-zoom{-ms-touch-action:pan-x pan-y;touch-action:pan-x pan-y}
+.leaflet-container.leaflet-touch-drag{-ms-touch-action:pinch-zoom;touch-action:none;touch-action:pinch-zoom}
+.leaflet-container.leaflet-touch-drag.leaflet-touch-zoom{-ms-touch-action:none;touch-action:none}
+.leaflet-container a{color:#0078A8}
+.leaflet-tile{filter:inherit;visibility:hidden}
+.leaflet-tile-loaded{visibility:inherit}
+.leaflet-zoom-box{width:0;height:0;-moz-box-sizing:border-box;box-sizing:border-box;z-index:800}
+.leaflet-pane{z-index:400}
+.leaflet-tile-pane{z-index:200}
+.leaflet-overlay-pane{z-index:400}
+.leaflet-shadow-pane{z-index:500}
+.leaflet-marker-pane{z-index:600}
+.leaflet-tooltip-pane{z-index:650}
+.leaflet-popup-pane{z-index:700}
+.leaflet-map-pane canvas{z-index:100}
+.leaflet-map-pane svg{z-index:200}
+.leaflet-control{position:relative;z-index:800;pointer-events:visiblePainted;pointer-events:auto;float:left;clear:both}
+.leaflet-top,.leaflet-bottom{position:absolute;z-index:1000;pointer-events:none}
+.leaflet-top{top:0}.leaflet-right{right:0}.leaflet-bottom{bottom:0}.leaflet-left{left:0}
+.leaflet-right .leaflet-control{float:right;margin-right:10px}
+.leaflet-top .leaflet-control{margin-top:10px}
+.leaflet-bottom .leaflet-control{margin-bottom:10px}
+.leaflet-left .leaflet-control{margin-left:10px}
+.leaflet-zoom-animated{-webkit-transform-origin:0 0;transform-origin:0 0}
+svg.leaflet-zoom-animated{will-change:transform}
+.leaflet-zoom-anim .leaflet-zoom-animated{-webkit-transition:-webkit-transform .25s cubic-bezier(0,0,.25,1);
+transition:transform .25s cubic-bezier(0,0,.25,1)}
+.leaflet-zoom-anim .leaflet-tile,.leaflet-pan-anim .leaflet-tile{-webkit-transition:none;transition:none}
+.leaflet-zoom-anim .leaflet-zoom-hide{visibility:hidden}
+.leaflet-interactive{cursor:pointer}
+.leaflet-container{-webkit-tap-highlight-color:rgba(51,181,229,.4)}
+.leaflet-bar{box-shadow:0 1px 5px rgba(0,0,0,.65);border-radius:4px}
+.leaflet-bar a{background-color:#fff;border-bottom:1px solid #ccc;width:26px;height:26px;line-height:26px;
+display:block;text-align:center;text-decoration:none;color:#000}
+.leaflet-bar a:hover{background-color:#f4f4f4}
+.leaflet-bar a:first-child{border-top-left-radius:4px;border-top-right-radius:4px}
+.leaflet-bar a:last-child{border-bottom-left-radius:4px;border-bottom-right-radius:4px;border-bottom:none}
+.leaflet-control-zoom-in,.leaflet-control-zoom-out{font:bold 18px/26px Tahoma,Verdana,sans-serif}
+.leaflet-touch .leaflet-bar a{width:30px;height:30px;line-height:30px}
+.leaflet-touch .leaflet-control-zoom-in,.leaflet-touch .leaflet-control-zoom-out{font-size:22px}
+.leaflet-control-attribution{background:rgba(255,255,255,.8);margin:0;padding:0 5px;font-size:10px;color:#333}
+.leaflet-control-attribution a{text-decoration:none}
+.leaflet-popup{position:absolute;text-align:center;margin-bottom:20px}
+.leaflet-popup-content-wrapper{padding:1px;text-align:left;border-radius:12px;background:#fff;
+box-shadow:0 3px 14px rgba(0,0,0,.4)}
+.leaflet-popup-content{margin:13px 19px;line-height:1.4;min-height:1px}
+.leaflet-popup-tip-container{width:40px;height:20px;position:absolute;left:50%;margin-top:-1px;
+margin-left:-20px;overflow:hidden;pointer-events:none}
+.leaflet-popup-tip{width:17px;height:17px;padding:1px;margin:-10px auto 0;pointer-events:auto;
+-webkit-transform:rotate(45deg);transform:rotate(45deg);background:#fff;box-shadow:0 3px 14px rgba(0,0,0,.4)}
+.leaflet-container a.leaflet-popup-close-button{position:absolute;top:0;right:0;border:none;text-align:center;
+width:24px;height:24px;font:16px/24px Tahoma,Verdana,sans-serif;color:#757575;text-decoration:none;background:transparent}
+.leaflet-popup-scrolled{overflow:auto}
+.leaflet-control-layers{box-shadow:0 1px 5px rgba(0,0,0,.4);background:#fff;border-radius:5px}
+.leaflet-control-layers-toggle{background-image:url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCIgd2lkdGg9IjI0IiBoZWlnaHQ9IjI0Ij48cGF0aCBkPSJNMTIgMkwyIDdsMTAgNSAxMC01LTEwLTV6bTAgMTFMMiA4djlsMTAgNSAxMC01VjhsLTEwIDV6IiBmaWxsPSIjMzMzIi8+PC9zdmc+);
+width:36px;height:36px;background-repeat:no-repeat;background-position:50% 50%;display:block}
+.leaflet-control-layers .leaflet-control-layers-list{display:none}
+.leaflet-control-layers-expanded .leaflet-control-layers-list{display:block;position:relative}
+.leaflet-control-layers-expanded{padding:6px 10px 6px 6px;color:#333;background:#fff}
+.leaflet-control-layers label{display:block;font-size:13px}
+.leaflet-fade-anim .leaflet-popup{opacity:0;-webkit-transition:opacity .2s linear;transition:opacity .2s linear}
+.leaflet-fade-anim .leaflet-map-pane .leaflet-popup{opacity:1}
+
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--primary:#CC1514;--primary-dark:#9E0F0E;--bg:#fafafa;--card-bg:#fff;--text:#1a1a1a;--text-secondary:#666;--border:#e0e0e0;--radius:12px;--shadow:0 2px 8px rgba(0,0,0,.08)}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Helvetica Neue','Segoe UI','Hiragino Sans','Noto Sans CJK JP',sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;overflow:hidden}
+#app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+
+/* 上部：検索を最優先に配置 */
+.searchbar{
+  display:flex;align-items:center;gap:8px;
+  padding:calc(env(safe-area-inset-top) + 8px) 12px 8px;
+  background:var(--primary);flex-shrink:0
+}
+.searchbar .logo{width:28px;height:28px;border-radius:6px;flex-shrink:0;display:block}
+#search{
+  flex:1;min-width:0;padding:9px 14px;border:0;border-radius:20px;
+  font-size:16px;outline:none;background:#fff;color:var(--text)
+}
+#search::placeholder{color:#aaa}
+.mapbtn{
+  flex-shrink:0;width:34px;height:34px;border:0;border-radius:8px;
+  background:rgba(255,255,255,.2);color:#fff;font-size:15px;line-height:1;cursor:pointer
+}
+.mapbtn:active{background:rgba(255,255,255,.35)}
+
+/* 件数バー：極細 */
+.statusbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 14px;background:var(--card-bg);border-bottom:1px solid var(--border);
+  font-size:12px;color:var(--text-secondary);flex-shrink:0
+}
+.statusbar strong{color:var(--primary);font-weight:700;font-size:13px}
+.clearbtn{border:0;background:none;color:var(--primary);font-size:12px;font-weight:600;padding:2px 4px;cursor:pointer;display:none}
+.statusbar .right{display:flex;align-items:center;gap:8px}
+#mapSrc{border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--text-secondary);font-size:11px;padding:2px 4px;max-width:120px}
+.clearbtn.on{display:block}
+
+#map{height:260px;flex-shrink:0;border-bottom:2px solid var(--primary);background:#e8e8e8;transition:height .2s}
+.leaflet-control-layers{font-size:12px;border-radius:8px!important;box-shadow:0 1px 5px rgba(0,0,0,.3)!important}
+.leaflet-control-layers-toggle{width:32px!important;height:32px!important;background-size:18px 18px!important}
+.leaflet-popup-content{font-size:13px;line-height:1.5;margin:10px 12px}
+.leaflet-popup-content b{font-size:14px}
+.leaflet-container{font-family:inherit}
+.lm-icon{background:none!important;border:0!important}
+.lm{display:inline-block;white-space:nowrap;font-size:10px;font-weight:700;padding:1px 5px;border-radius:4px;
+    background:rgba(255,255,255,.88);border:1px solid rgba(0,0,0,.15);color:#333;box-shadow:0 1px 2px rgba(0,0,0,.15)}
+.lm.exit{background:rgba(26,115,232,.92);color:#fff;border-color:rgba(0,0,0,.1)}
+.pf{background:var(--primary);color:#fff;padding:0 6px;border-radius:3px;font-size:12px}
+.pd{color:var(--primary);font-weight:700}
+.shop-card .guide{font-size:12px;color:#555;background:#f6f6f6;border-radius:6px;padding:5px 8px;margin-bottom:8px;line-height:1.5}
+.shop-card .guide .lmk{display:block;color:#888;font-size:11px}
+.shop-card .dist-badge{font-variant-numeric:tabular-nums}
+#map.folded{height:0;border-bottom-width:0}
+
+#list{flex:1;overflow-y:auto;padding:8px 12px calc(env(safe-area-inset-bottom) + 60px);-webkit-overflow-scrolling:touch}
+.shop-card{background:var(--card-bg);border-radius:var(--radius);padding:12px 14px;margin-bottom:8px;box-shadow:var(--shadow);transition:transform .15s,box-shadow .2s}
+.shop-card:active{transform:scale(.98)}
+.shop-card.hit{box-shadow:0 0 0 2px var(--primary),var(--shadow)}
+.shop-card .name{font-size:16px;font-weight:700;margin-bottom:5px;line-height:1.3}
+.shop-card .floor{display:inline-block;background:var(--primary);color:#fff;font-size:12px;font-weight:700;padding:1px 8px;border-radius:4px;margin-left:6px;vertical-align:2px}
+.shop-card .meta{display:flex;align-items:flex-start;gap:8px;margin-bottom:8px;font-size:13px;color:var(--text-secondary)}
+.shop-card .meta .bldg{flex:1;font-weight:600;color:#444}
+.shop-card .addr{display:block;font-size:11px;color:#999;font-weight:400;margin-top:2px}
+.shop-card .dist-badge{font-size:11px;padding:2px 8px;border-radius:10px;font-weight:600;flex-shrink:0}
+.dist-badge.near{background:#e8f5e9;color:#2e7d32}
+.dist-badge.mid{background:#fff8e1;color:#f57f17}
+.dist-badge.far{background:#fce4ec;color:#c62828}
+.shop-card .actions{display:flex;gap:8px}
+.shop-card .actions a{flex:1;text-align:center;padding:8px 0;border-radius:8px;font-size:13px;font-weight:600;text-decoration:none;transition:opacity .15s}
+.shop-card .actions a:active{opacity:.7}
+.btn-map{background:var(--primary);color:#fff}
+.btn-route{background:#f2f2f2;color:var(--text)}
+.no-result{text-align:center;padding:60px 20px;color:var(--text-secondary)}
+.no-result .big{font-size:48px;margin-bottom:12px}
+.build{text-align:center;font-size:11px;color:#bbb;padding:16px 0 4px}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div class="searchbar">
+  <img src="icon_192.png" alt="" class="logo">
+  <input type="search" id="search" placeholder="店名・ビル名・住所・階数" autocomplete="off" enterkeyhint="search">
+  <button class="mapbtn" id="mapToggle" aria-label="地図の表示切替">🗺</button>
+</div>
+
+<div class="statusbar">
+  <span><strong id="total">0</strong> 店舗</span>
+  <span class="right">
+    <button class="clearbtn" id="clearBtn">× クリア</button>
+    <select id="mapSrc" aria-label="地図の種類">
+      <option value="osmjp">詳細（店名入り）</option>
+      <option value="osm">OpenStreetMap</option>
+      <option value="gsi">地理院 標準</option>
+      <option value="pale">地理院 淡色</option>
+      <option value="carto">シンプル</option>
+      <option value="photo">航空写真</option>
+    </select>
+  </span>
+</div>
+
+<div id="map"></div>
+<div id="list"></div>
+</div>
+<script>
+const BLDG_YOMI={'池袋駅':'イケブクロエキ','ルミネ':'ルミネ','パルコ':'パルコ','東武百貨店':'トウブヒャッカテン','西武百貨店':'セイブヒャッカテン','サンシャインシティ':'サンシャインシティ','サンシャイン60':'サンシャインロクジュウ','シネマサンシャイン':'シネマサンシャイン','ホテルメトロポリタン':'ホテルメトロポリタン','メトロポリタンプラザ':'メトロポリタンプラザ','Esola':'エソラ','Ikebukuro':'イケブクロ','エチカ':'エチカ','東口':'ヒガシグチ','西口':'ニシグチ','南口':'ミナミグチ','北口':'キタグチ','東武ホープセンター':'トウブホープセンター','東京芸術劇場':'トウキョウゲイジュツゲキジョウ','Hareza池袋':'ハレザイケブクロ','大塚':'オオツカ','新大塚':'シンオオツカ','椎名町':'シイナマチ','要町':'カナメチョウ','池袋仲通り':'イケブクロナカドオリ','池袋西口公園':'イケブクロニシグチコウエン','池袋東口':'イケブクロヒガシグチ','池袋駅前':'イケブクロエキマエ','池袋サンシャイン':'イケブクロサンシャイン','雑司が谷':'ゾウシガヤ','目白':'メジロ','護国寺':'ゴコクジ','江戸川橋':'エドガワバシ','茗荷谷':'ミョウガダニ','本州ビル':'ホンシュウビル','大晃第8ビル':'タイコウダイハチビル','大晃第3ビル':'タイコウダイサンビル','大晃第2ビル':'タイコウダイニビル','TYビル':'ティーワイビル','第II絆ビル':'ダイニキズナビル','第1絆ビル':'ダイイチキズナビル','第一絆ビル':'ダイイチキズナビル','第2絆ビル':'ダイニキズナビル','第二絆ビル':'ダイニキズナビル','第3絆ビル':'ダイサンキズナビル','第三絆ビル':'ダイサンキズナビル','第10松本ビル':'ダイジュウマツモトビル','江戸半第3パレス':'エドハンダイサンパレス','ロイヤル西池袋':'ロイヤルニシイケブクロ','ザ・バレル池袋ビル':'ザバレルイケブクロビル','バレル池袋':'バレルイケブクロ','マキビル':'マキビル','マキタビル':'マキタビル','TOP池袋ビル':'トップイケブクロビル','ksビル':'ケイエスビル','K\'sIIビル':'ケイエスツービル','KS2ビル':'ケイエスツービル','竜崎ビル':'リュウザキビル','青井ビル':'アオイビル','ゆう文ビル':'ユウブンビル','天幸ビル':'テンコウビル','越路ビル':'コシジビル','梶ビル':'カジビル','岸野ビル':'キシノビル','豊ビル':'ユタカビル','12ビル':'ジュウニビル','十二ビル':'ジュウニビル','壱ビル':'イチビル','東通ビル':'トウツウビル','ウエストコア':'ウエストコア','ウエストコアービル':'ウエストコアビル','あけぼのビル':'アケボノビル','岩田ビル':'イワタビル','秋福ビル':'シュウフクビル','三径33ビル':'サンケイサンジュウサンビル','三経33ビル':'サンケイサンジュウサンビル','ローヤルハイツ':'ローヤルハイツ','パールシティビル':'パールシティビル','YSステージ':'ワイエスステージ','グランディアビル':'グランディアビル','徳永第三ビル':'トクナガダイサンビル','徳永第5ビル':'トクナガダイゴビル','オリヂン':'オリジン','大昇ビル':'ダイショウビル','エルクルーセ':'エルクルーセ','アークシティ池袋':'アークシティイケブクロ','レスタージュ池袋':'レスタージュイケブクロ','エスペランザ池袋':'エスペランザイケブクロ','ロイヤルプラザII':'ロイヤルプラザツー','白鳳池袋第12ビル':'ハクホウイケブクロダイジュウニビル','第三川口ビル':'ダイサンカワグチビル','邦正ビル':'ホウセイビル','フォーレセブンビル':'フォーレセブンビル','アドワンビル':'アドワンビル','鳥駒総本店ビル':'トリコマソウホンテンビル','東京第3ビル':'トウキョウダイサンビル','大国屋10池袋ビル':'ダイコクヤジュウイケブクロビル','梅本ビル':'ウメモトビル','ISKビル':'アイエスケイビル','TⅡビル':'ティーツービル','第1大谷ビル':'ダイイチオオタニビル','ホワイトビル':'ホワイトビル','ダイコウ8ビル':'ダイコウハチビル','光陽ビル':'コウヨウビル','ABCキッチン':'エービーシーキッチン','叶ビル':'カノウビル','アユミビル':'アユミビル','矢島ビル参番館':'ヤジマビルサンバンカン','近代ビル':'キンダイビル','JPビル':'ジェイピービル','玉井ビル':'タマイビル','第二大浦ビル':'ダイニオオウラビル','ロイヤルホテル新館':'ロイヤルホテルシンカン','池袋岸野ビル':'イケブクロキシノビル'};
+
+const SHOP_YOMI={'池袋ウエストゲートポーカー':'イケブクロウエストゲートポーカー','アイドルリーグ':'アイドルリーグ','クラブアルカナ':'クラブアルカナ','コンカフェ Anokoro Memories':'コンカフェアノコロメモリーズ','AGASA':'アガサ','AIR PORT IKB':'エアポートイケブクロ','ATARAS - アタラス':'アタラス','あふたーすくーる本店':'アフタースクールホンテン','Under Dog Poker':'アンダードッグポーカー','Aravan Lilian':'アラヴァンリリアン','OWL':'アウル','Bar IXS':'バーイクス','Bar15 イチゴ':'バーイチゴイチゴ','EWAVE':'イーウェーブ','ELF':'エルフ','Shula\'na Sports Concept Bar':'シュラーナスポーツコンセプトバー','GOLD CHIHUAHUA 2nd':'ゴールドチワワセカンド','NATALIS(ナタリス)':'ナタリス','Hyakka':'ヒャッカ','La Chance':'ラチャンス','AmusementBar Pino by SABON':'アミューズメントバーピノバイサボン','Hello Heaven':'ハローヘブン','VENUS':'ビーナス','Bar Mi Casita':'バーミカシータ','DAHLIA':'ダリア','cocotto':'ココット','Night Blood':'ナイトブラッド','NEW KAWAII':'ニューカワイイ','Puchimini academy':'プチミニアカデミー','Cantare':'カンターレ','OLIVE':'オリーブ','charmant-シャルマン':'シャルマン','Lounge Miccca～ミッカ':'ラウンジミッカ','CHANGE THE WEST':'チェンジザウエスト','FORTISSIMO':'フォルティシモ','TRUSS':'トラス','RAS池袋':'ラスイケブクロ','R':'アール','CROSSDRESS':'クロスドレス','BAR 7LUCK':'バーセブンラック','MIXWILL':'ミックスウィル','vividcafe':'ビビッドカフェ','RICA':'リカ','88 IKEBUKURO':'ハチハチイケブクロ','lounge N':'ラウンジエヌ','Mrs.J池袋':'ミセスジェイイケブクロ','Bar Greed':'バーグリード','ストーム':'ストーム','Bar success':'バーサクセス','ゆったか':'ユッタカ','エンジェルフェザー':'エンジェルフェザー','ヘベレケ':'ヘベレケ','miumiu':'ミュウミュウ','メロディー':'メロディー','クラブルシュ':'クラブルシュ','ラウンジルーナ':'ラウンジルーナ','ももこカラオケ倶楽部':'モモコカラオケクラブ','ガールズバーふくろう':'ガールズバーフクロウ','デプロイ':'デプロイ','バーエス':'バーエス','ミュージックバーミルク':'ミュージックバーミルク','スロぱちコンカフェ池袋店':'スロパチコンカフェイケブクロテン','ミリオン':'ミリオン','キミのわがままデビルちゃん':'キミノワガママデビルチャン','グランドライン':'グランドライン','ちとせ会館':'チトセカイカン'};
+
+const CENTER=[35.733624,139.709896];
+
+
+function distLabel(m){var d=Math.round(N([m.lat,m.lng],CENTER));return d<200?'近':d<400?'中':'遠'}
+function distClass(m){var d=Math.round(N([m.lat,m.lng],CENTER));return d<200?'near':d<400?'mid':'far'}
+
+function N(a,b){var R=6371e3;var dL=((b[0]-a[0])*Math.PI/180);var dL2=((b[1]-a[1])*Math.PI/180);var a2=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(dL2/2)*Math.sin(dL2/2);return 2*R*Math.atan2(Math.sqrt(a2),Math.sqrt(1-a2))}
+
+const SHOPS=[
+  {name:'池袋ウエストゲートポーカー',lat:35.7291561,lng:139.7044431,bldg:'サンサーラ西池袋ビル',addr:'東京都豊島区西池袋3-26-6',floor:'2F',url:'https://maps.google.com/maps?q=35.7291561,139.7044431'},
+  {name:'アイドルリーグ',lat:35.7326927,lng:139.7099862,bldg:'大昇ビル',addr:'東京都豊島区西池袋1-40-1',floor:'2F',url:'https://maps.google.com/maps?q=35.7326927,139.7099862'},
+  {name:'クラブアルカナ',lat:35.7301653,lng:139.709385,bldg:'ロイヤル西池袋',addr:'東京都豊島区西池袋1-29-3',floor:'5F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'R',lat:35.7358426,lng:139.7084043,bldg:'江戸半第3パレス',addr:'東京都豊島区池袋2-4-3',floor:'3F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'コンカフェ Anokoro Memories',lat:35.7301653,lng:139.709385,bldg:'青井ビル第2',addr:'東京都豊島区西池袋1-34-5',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'AGASA',lat:35.7301653,lng:139.709385,bldg:'葉山ビル',addr:'東京都豊島区池袋2-41-2',floor:'7F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'AIR PORT IKB',lat:35.7301653,lng:139.709385,bldg:'星野ビル',addr:'東京都豊島区西池袋1-36-10',floor:'1F・2F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'アイリス',lat:35.7358426,lng:139.7084043,bldg:'ザ・バレル池袋ビル',addr:'東京都豊島区池袋2-48-2',floor:'8F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'アルドーレ',lat:35.7301653,lng:139.709385,bldg:'マキビル',addr:'東京都豊島区西池袋1-41-2',floor:'2F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ラウンジアクター',lat:35.7358426,lng:139.7084043,bldg:'第一絆ビル',addr:'東京都豊島区池袋2-10-3',floor:'4F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ATARAS - アタラス',lat:35.7323296,lng:139.7208742,bldg:'ローヤルハイツ',addr:'東京都豊島区池袋2-14-11',floor:'1F・102',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
+  {name:'アズール',lat:35.7358426,lng:139.7084043,bldg:'葉山ビル',addr:'東京都豊島区池袋2-41-2',floor:'6F・602',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'あふたーすくーる本店',lat:35.7136782,lng:139.7293461,bldg:'白鳳池袋第12ビル',addr:'東京都豊島区池袋2-47-1',floor:'1F',url:'https://maps.google.com/maps?q=35.7136782,139.7293461'},
+  {name:'Under Dog Poker',lat:35.7363563,lng:139.7176348,bldg:'マキタビル',addr:'東京都豊島区池袋2-42-7',floor:'B1F',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
+  {name:'Aravan Lilian',lat:35.7290721,lng:139.7209701,bldg:'三経33ビル',addr:'東京都豊島区東池袋1-4-2',floor:'7F',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'アテナ池袋',lat:35.7358426,lng:139.7084043,bldg:'十二ビル',addr:'東京都豊島区池袋2-12-13',floor:'4F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'アンティーク',lat:35.7311554,lng:139.7149383,bldg:'TOP池袋ビル',addr:'東京都豊島区西池袋1-41-5',floor:'4F',url:'https://maps.google.com/maps?q=35.7311554,139.7149383'},
+  {name:'アルマージ',lat:35.7358426,lng:139.7084043,bldg:'アークシティ池袋',addr:'東京都豊島区池袋2-45-1',floor:'2F・202',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'あにぽり 池袋店',lat:35.7358426,lng:139.7084043,bldg:'ザ・バレル池袋ビル',addr:'東京都豊島区池袋2-48-2',floor:'4F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'アイスプリンス',lat:35.7243629,lng:139.721657,bldg:'第三川口ビル',addr:'東京都豊島区池袋2-7-5',floor:'5F',url:'https://maps.google.com/maps?q=35.7243629,139.721657'},
+  {name:'バーARIKA',lat:35.7358426,lng:139.7084043,bldg:'大晃第2ビル',addr:'東京都豊島区池袋2-12-1',floor:'4F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'クラブアミューズ',lat:35.7358426,lng:139.7084043,bldg:'本州ビル',addr:'東京都豊島区池袋2-2-7',floor:'3F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'OWL',lat:35.7317524,lng:139.7101113,bldg:'エルクルーセ',addr:'東京都豊島区西池袋1-23-1',floor:'7F',url:'https://maps.google.com/maps?q=35.7317524,139.7101113'},
+  {name:'アマン',lat:35.7301653,lng:139.709385,bldg:'TOP池袋ビル',addr:'東京都豊島区西池袋1-41-5',floor:'4F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'アルカロイド',lat:35.7301653,lng:139.709385,bldg:'KS2ビル',addr:'東京都豊島区西池袋1-41-8',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'Bar15 イチゴ',lat:35.7358426,lng:139.7084043,bldg:'第一絆ビル',addr:'東京都豊島区池袋2-10-3',floor:'3F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'池袋クラス',lat:35.7301653,lng:139.709385,bldg:'オリヂン',addr:'東京都豊島区西池袋1-35-3',floor:'1F・2F・3F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'BARイビザトウキョウ',lat:35.7358426,lng:139.7084043,bldg:'十二ビル',addr:'東京都豊島区池袋2-12-13',floor:'1F・101',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'Bar IXS',lat:35.731312,lng:139.7075851,bldg:'ゆう文ビル',addr:'東京都豊島区池袋2-3-3',floor:'2F',url:'https://maps.google.com/maps?q=35.731312,139.7075851'},
+  {name:'イザカバー',lat:35.7327424,lng:139.7104544,bldg:'天幸ビル',addr:'東京都豊島区西池袋1-41-1',floor:'4F',url:'https://maps.google.com/maps?q=35.7327424,139.7104544'},
+  {name:'イケショウ',lat:35.7358426,lng:139.7084043,bldg:'壱ビル',addr:'東京都豊島区池袋2-5-4',floor:'B1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'EWAVE',lat:35.7323296,lng:139.7208742,bldg:'ロイヤルプラザII',addr:'東京都豊島区西池袋3-31-15',floor:'7F',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
+  {name:'池猫 ~池袋の猫たち~ café&bar',lat:35.7363563,lng:139.7176348,bldg:'第10松本ビル',addr:'東京都豊島区池袋2-53-10',floor:'7F',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
+  {name:'苺泥棒',lat:35.7136782,lng:139.7293461,bldg:'嶺岡ビル',addr:'東京都豊島区池袋2-42-1',floor:'5F',url:'https://maps.google.com/maps?q=35.7136782,139.7293461'},
+  {name:'1年5組',lat:35.7301653,lng:139.709385,bldg:'TOP池袋ビル',addr:'東京都豊島区西池袋1-41-5',floor:'5F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'Eねぇ',lat:35.7291561,lng:139.7044431,bldg:'ロイヤルプラザII',addr:'東京都豊島区西池袋3-31-15',floor:'6F',url:'https://maps.google.com/maps?q=35.7291561,139.7044431'},
+  {name:'バーイロハ',lat:35.7284313,lng:139.7017131,bldg:'',addr:'東京都豊島区西池袋1-31-6',floor:'B1F',url:'https://maps.google.com/maps?q=35.7284313,139.7017131'},
+  {name:'ウォンテッド',lat:35.7358426,lng:139.7084043,bldg:'第3絆ビル',addr:'東京都豊島区池袋1-1-4',floor:'8F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ウルトラレアキス',lat:35.7358426,lng:139.7084043,bldg:'江戸半第3パレス',addr:'東京都豊島区池袋2-4-3',floor:'4F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'WAVE',lat:35.7363563,lng:139.7176348,bldg:'マキタビル',addr:'東京都豊島区池袋2-42-7',floor:'B1F',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
+  {name:'ELF',lat:35.7301653,lng:139.709385,bldg:'TYビル',addr:'東京都豊島区西池袋1-38-6',floor:'6F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'エルトウキョウ',lat:35.7358426,lng:139.7084043,bldg:'第一絆ビル',addr:'東京都豊島区池袋2-10-3',floor:'2F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'バーラウンジエース',lat:35.7358426,lng:139.7084043,bldg:'ザ・バレル池袋ビル',addr:'東京都豊島区池袋2-48-2',floor:'6F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'Ms',lat:35.7358426,lng:139.7084043,bldg:'あけぼのビル',addr:'東京都豊島区池袋2-5-9',floor:'1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ラピス',lat:35.7136782,lng:139.7293461,bldg:'第10松本ビル',addr:'東京都豊島区池袋2-53-1',floor:'6F',url:'https://maps.google.com/maps?q=35.7136782,139.7293461'},
+  {name:'ミセスジェイ',lat:35.7301653,lng:139.709385,bldg:'K\'sIIビル',addr:'東京都豊島区西池袋1-41-8',floor:'2F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ラス',lat:35.7358426,lng:139.7084043,bldg:'第1絆ビル',addr:'東京都豊島区池袋2-10-3',floor:'B1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ラナ',lat:35.73452,lng:139.7099304,bldg:'第3絆ビル',addr:'東京都豊島区池袋1-1-4',floor:'6F',url:'https://maps.google.com/maps?q=35.73452,139.7099304'},
+  {name:'プチミニヨン',lat:35.7296839,lng:139.7162331,bldg:'パールシティビル',addr:'東京都豊島区東池袋1-28-6',floor:'B1F',url:'https://maps.google.com/maps?q=35.7296839,139.7162331'},
+  {name:'ホテルトトロ',lat:35.7363563,lng:139.7176348,bldg:'',addr:'東京都豊島区池袋2-64-15',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
+  {name:'Shula\'na Sports Concept Bar',lat:35.7301653,lng:139.709385,bldg:'TYビル',addr:'東京都豊島区東池袋1-40-11',floor:'4F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'新珍味',lat:35.7320419,lng:139.7099449,bldg:'',addr:'東京都豊島区西池袋1-23-4',floor:'1F',url:'https://maps.google.com/maps?q=35.7320419,139.7099449'},
+  {name:'GOLD CHIHUAHUA 2nd',lat:35.7358426,lng:139.7084043,bldg:'第二絆ビル',addr:'東京都豊島区池袋2-47-12',floor:'8F-A',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'NATALIS(ナタリス)',lat:35.7327424,lng:139.7104544,bldg:'天幸ビル',addr:'東京都豊島区西池袋1-41-1',floor:'6F',url:'https://maps.google.com/maps?q=35.7327424,139.7104544'},
+  {name:'隠れBARギルド',lat:35.7363563,lng:139.7176348,bldg:'ホワイトビル',addr:'東京都豊島区池袋2-56-8',floor:'B1F-D',url:'https://maps.google.com/maps?q=35.7363563,139.7176348'},
+  {name:'Hyakka',lat:35.7358426,lng:139.7084043,bldg:'本州ビル',addr:'東京都豊島区池袋2-2-7',floor:'3F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'La Chance',lat:35.7358426,lng:139.7084043,bldg:'あけぼのビル',addr:'東京都豊島区池袋2-5-9',floor:'2F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'AmusementBar Pino by SABON',lat:35.7358426,lng:139.7084043,bldg:'徳永第三ビル',addr:'東京都豊島区池袋2-4-6',floor:'3F-C',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'みつばちマーヤZ',lat:35.7301653,lng:139.709385,bldg:'第1大谷ビル',addr:'東京都豊島区西池袋1-39-4',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'麻雀チャイナ池袋店',lat:35.7290721,lng:139.7209701,bldg:'TⅡビル',addr:'東京都豊島区東池袋1-2-4',floor:'3F',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'麺処花田池袋店',lat:35.7311554,lng:139.7149383,bldg:'東池袋ISKビル',addr:'東京都豊島区東池袋1-23-8',floor:'1F',url:'https://maps.google.com/maps?q=35.7311554,139.7149383'},
+  {name:'クラブ美南',lat:35.7312086,lng:139.7066415,bldg:'梅本ビル',addr:'東京都豊島区西池袋3-29-3',floor:'2F-C',url:'https://maps.google.com/maps?q=35.7312086,139.7066415'},
+  {name:'SECOND',lat:35.7290721,lng:139.7209701,bldg:'大国屋10池袋ビル',addr:'東京都豊島区東池袋1-7-8',floor:'6F',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'Hello Heaven',lat:35.7301653,lng:139.709385,bldg:'青井ビル',addr:'東京都豊島区西池袋1-34-5',floor:'3F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ミュウミュウ',lat:35.7284313,lng:139.7017131,bldg:'池袋YSステージ',addr:'東京都豊島区西池袋1-38-1',floor:'5F',url:'https://maps.google.com/maps?q=35.7284313,139.7017131'},
+  {name:'夢幻泡影',lat:35.7340006,lng:139.7088419,bldg:'第8前島ビル',addr:'東京都豊島区池袋2-12-14',floor:'6F',url:'https://maps.google.com/maps?q=35.7340006,139.7088419'},
+  {name:'不死鳥',lat:35.7358426,lng:139.7084043,bldg:'池袋岸野ビル',addr:'東京都豊島区池袋2-13-1',floor:'B1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'Chill',lat:35.7358426,lng:139.7084043,bldg:'梶ビル',addr:'東京都豊島区池袋2-8-5',floor:'B1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'VENUS',lat:35.7301653,lng:139.709385,bldg:'池袋東通ビル',addr:'東京都豊島区西池袋1-41-3',floor:'4F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'Bar Mi Casita',lat:35.7358426,lng:139.7084043,bldg:'豊ビル',addr:'東京都豊島区池袋1-1-3',floor:'B1F-A',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'DAHLIA',lat:35.7290721,lng:139.7209701,bldg:'東京第3ビル',addr:'東京都豊島区東池袋1-13-13',floor:'3F',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'レガート',lat:35.7358426,lng:139.7084043,bldg:'ザ・バレル池袋ビル',addr:'東京都豊島区池袋2-48-2',floor:'5F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'天使.com',lat:35.7329764,lng:139.7103618,bldg:'エスペランザ池袋',addr:'東京都豊島区西池袋1-41-6',floor:'4F',url:'https://maps.google.com/maps?q=35.7329764,139.7103618'},
+  {name:'cocotto',lat:35.732838,lng:139.709672,bldg:'ウエストコアービル',addr:'東京都豊島区西池袋1-39-1',floor:'6F',url:'https://maps.google.com/maps?q=35.732838,139.709672'},
+  {name:'Night Blood',lat:35.7358426,lng:139.7084043,bldg:'十二ビル',addr:'東京都豊島区池袋2-12-13',floor:'5F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ガールズバーリゾートセカンド',lat:35.7331777,lng:139.7120551,bldg:'邦正ビル',addr:'東京都豊島区西池袋1-44-6',floor:'6F・7F',url:'https://maps.google.com/maps?q=35.7331777,139.7120551'},
+  {name:'NEW KAWAII',lat:35.7301653,lng:139.709385,bldg:'池袋東通ビル',addr:'東京都豊島区西池袋1-41-3',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ポレポレ',lat:35.7358426,lng:139.7084043,bldg:'越路ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'Puchimini academy',lat:35.7358426,lng:139.7084043,bldg:'光陽ビル',addr:'東京都豊島区池袋2-13-8',floor:'B1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'おかえりなさい',lat:35.7301653,lng:139.709385,bldg:'竜崎ビル',addr:'東京都豊島区西池袋1-37-2',floor:'2・3・4F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'Cantare',lat:35.7358426,lng:139.7084043,bldg:'大晃第8ビル',addr:'東京都豊島区池袋2-10-8',floor:'7F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'OLIVE',lat:35.7340006,lng:139.7088419,bldg:'池袋ロイヤルホテル新館',addr:'東京都豊島区池袋2-41-3',floor:'B1F',url:'https://maps.google.com/maps?q=35.7340006,139.7088419'},
+  {name:'鏡‐Ⅱ‐',lat:35.7264933,lng:139.7160267,bldg:'フォーレセブンビル',addr:'東京都豊島区東池袋1-28-6',floor:'4F',url:'https://maps.google.com/maps?q=35.7264933,139.7160267'},
+  {name:'charmant-シャルマン',lat:35.7358426,lng:139.7084043,bldg:'江戸半第3パレス',addr:'東京都豊島区池袋2-4-3',floor:'6F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ぷんぷりぷいっこ',lat:35.732508,lng:139.714408,bldg:'アドワンビル',addr:'東京都豊島区東池袋1-39-2',floor:'B1F',url:'https://maps.google.com/maps?q=35.732508,139.714408'},
+  {name:'ブラックキャット',lat:35.7358426,lng:139.7084043,bldg:'梶ビル',addr:'東京都豊島区池袋2-8-5',floor:'7F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'Lounge Miccca～ミッカ',lat:35.7358426,lng:139.7084043,bldg:'本州ビル',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'CHANGE THE WEST',lat:35.7358426,lng:139.7084043,bldg:'レスタージュ池袋',addr:'東京都豊島区池袋2-48-2',floor:'7F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'FORTISSIMO',lat:35.7290721,lng:139.7209701,bldg:'鳥駒総本店ビル',addr:'東京都豊島区東池袋1-7-7',floor:'10F',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'TRUSS',lat:35.7301653,lng:139.709385,bldg:'秋福ビル',addr:'東京都豊島区西池袋1-42-8',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'甚',lat:35.7301653,lng:139.709385,bldg:'岩田ビル',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ストーム',lat:35.7301653,lng:139.709385,bldg:'マキビル',addr:'東京都豊島区西池袋1-41-2',floor:'2F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'Bar success',lat:35.7358426,lng:139.7084043,bldg:'大晃第3ビル',addr:'東京都豊島区池袋2-10-1',floor:'5F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ゆったか',lat:35.7358426,lng:139.7084043,bldg:'大晃第8ビル',addr:'東京都豊島区池袋2-10-8',floor:'5F・502',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'エンジェルフェザー',lat:35.7290721,lng:139.7209701,bldg:'三経33ビル',addr:'東京都豊島区東池袋1-4-2',floor:'1F',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'Bar Greed',lat:35.7358426,lng:139.7084043,bldg:'12ビル',addr:'東京都豊島区池袋2-12-13',floor:'7F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'CROSSDRESS',lat:35.7323296,lng:139.7208742,bldg:'第II絆ビル',addr:'東京都豊島区池袋2-47-12',floor:'8F',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
+  {name:'ヘベレケ',lat:35.7301653,lng:139.709385,bldg:'叶ビル',addr:'東京都豊島区西池袋1-42-9',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'88 IKEBUKURO',lat:35.7323296,lng:139.7208742,bldg:'第II絆ビル',addr:'東京都豊島区池袋2-47-12',floor:'7F A室',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
+  {name:'メロディー',lat:35.7358426,lng:139.7084043,bldg:'アユミビル',addr:'東京都豊島区池袋2-11-5',floor:'B1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'クラブルシュ',lat:35.7301653,lng:139.709385,bldg:'TOP池袋ビル',addr:'東京都豊島区西池袋1-41-5',floor:'1F・2F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'MIXWILL',lat:35.7358426,lng:139.7084043,bldg:'豊ビル',addr:'東京都豊島区池袋1-1-4',floor:'3F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ラウンジルーナ',lat:35.7301653,lng:139.709385,bldg:'矢島ビル参番館',addr:'東京都豊島区西池袋1-34-4',floor:'4F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'ももこカラオケ倶楽部',lat:35.7323296,lng:139.7208742,bldg:'第II絆ビル',addr:'東京都豊島区池袋2-47-12',floor:'3F',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
+  {name:'ガールズバーふくろう',lat:35.7358426,lng:139.7084043,bldg:'徳永第5ビル',addr:'東京都豊島区池袋2-4-3',floor:'5F-A',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'RICA',lat:35.7301653,lng:139.709385,bldg:'玉井ビル',addr:'東京都豊島区東池袋1-42-18',floor:'1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'デプロイ',lat:35.7358426,lng:139.7084043,bldg:'豊ビル',addr:'東京都豊島区池袋1-1-3',floor:'B1F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'バーエス',lat:35.7323296,lng:139.7208742,bldg:'第II絆ビル',addr:'東京都豊島区池袋2-47-12',floor:'3F',url:'https://maps.google.com/maps?q=35.7323296,139.7208742'},
+  {name:'ミュージックバーミルク',lat:35.7301653,lng:139.709385,bldg:'近代ビル',addr:'東京都豊島区南池袋3-16-8',floor:'1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'vividcafe',lat:35.7301653,lng:139.709385,bldg:'秋福ビル',addr:'東京都豊島区西池袋1-42-8',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'スロぱちコンカフェ池袋店',lat:35.7358426,lng:139.7084043,bldg:'大晃第8ビル',addr:'東京都豊島区池袋2-10-8',floor:'9F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ミリオン',lat:35.7301653,lng:139.709385,bldg:'ロイヤル西池袋',addr:'東京都豊島区西池袋1-29-3',floor:'3F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'キミのわがままデビルちゃん',lat:35.7290721,lng:139.7209701,bldg:'鳥駒総本店ビル',addr:'東京都豊島区東池袋1-7-7',floor:'5F',url:'https://maps.google.com/maps?q=35.7290721,139.7209701'},
+  {name:'lounge N',lat:35.7301653,lng:139.709385,bldg:'JPビル',addr:'東京都豊島区西池袋1-37-8',floor:'B1F',url:'https://maps.google.com/maps?q=35.7301653,139.709385'},
+  {name:'BAR 7LUCK',lat:35.7358426,lng:139.7084043,bldg:'大晃第8ビル',addr:'東京都豊島区池袋2-10-8',floor:'6F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'グランドライン',lat:35.7358426,lng:139.7084043,bldg:'越路ビル',addr:'東京都豊島区池袋2-4-1',floor:'4F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'},
+  {name:'ちとせ会館',lat:35.7358426,lng:139.7084043,bldg:'バレル池袋',addr:'東京都豊島区池袋2-48-2',floor:'2F',url:'https://maps.google.com/maps?q=35.7358426,139.7084043'}
+];
+
+/* 追加分：欠けていた54店舗の読み仮名 */
+Object.assign(SHOP_YOMI,{
+'アイリス':'アイリス',
+'アルドーレ':'アルドーレ',
+'ラウンジアクター':'ラウンジアクター',
+'アズール':'アズール',
+'アテナ池袋':'アテナイケブクロ',
+'アンティーク':'アンティーク',
+'アルマージ':'アルマージ',
+'あにぽり 池袋店':'アニポリイケブクロテン',
+'アイスプリンス':'アイスプリンス',
+'バーARIKA':'バーアリカ',
+'クラブアミューズ':'クラブアミューズ',
+'アマン':'アマン',
+'アルカロイド':'アルカロイド',
+'池袋クラス':'イケブクロクラス',
+'BARイビザトウキョウ':'バーイビザトウキョウ',
+'イザカバー':'イザカバー',
+'イケショウ':'イケショウ',
+'池猫 ~池袋の猫たち~ café&bar':'イケネコイケブクロノネコタチカフェアンドバー',
+'苺泥棒':'イチゴドロボウ',
+'1年5組':'イチネンゴクミ',
+'Eねぇ':'イーネエ',
+'バーイロハ':'バーイロハ',
+'ウォンテッド':'ウォンテッド',
+'ウルトラレアキス':'ウルトラレアキス',
+'WAVE':'ウェーブ',
+'エルトウキョウ':'エルトウキョウ',
+'バーラウンジエース':'バーラウンジエース',
+'Ms':'エムエス',
+'ラピス':'ラピス',
+'ミセスジェイ':'ミセスジェイ',
+'ラス':'ラス',
+'ラナ':'ラナ',
+'プチミニヨン':'プチミニヨン',
+'ホテルトトロ':'ホテルトトロ',
+'新珍味':'シンチンミ',
+'隠れBARギルド':'カクレバーギルド',
+'みつばちマーヤZ':'ミツバチマーヤゼット',
+'麻雀チャイナ池袋店':'マージャンチャイナイケブクロテン',
+'麺処花田池袋店':'メンドコロハナダイケブクロテン',
+'クラブ美南':'クラブミナミ',
+'SECOND':'セカンド',
+'ミュウミュウ':'ミュウミュウ',
+'夢幻泡影':'ムゲンホウヨウ',
+'不死鳥':'フシチョウ',
+'Chill':'チル',
+'レガート':'レガート',
+'天使.com':'テンシドットコム',
+'ガールズバーリゾートセカンド':'ガールズバーリゾートセカンド',
+'ポレポレ':'ポレポレ',
+'おかえりなさい':'オカエリナサイ',
+'鏡‐Ⅱ‐':'カガミツー',
+'ぷんぷりぷいっこ':'プンプリプイッコ',
+'ブラックキャット':'ブラックキャット',
+'甚':'ジン'
+});
+
+/* 区分A反映分の別表記 */
+Object.assign(SHOP_YOMI,{
+'GOLD CHIHUAHUA 2nd':'ゴールドチワワ ゴールドチワワセカンド goldchihuahua チワワ',
+"Shula'na Sports Concept Bar":'シュラーナ シュラーナスポーツコンセプトバー shulana',
+'NATALIS(ナタリス)':'ナタリス natalis',
+'DAHLIA':'ダリア dahlia',
+'VENUS':'ビーナス venus ヴィーナス',
+'NEW KAWAII':'ニューカワイイ newkawaii ニューかわいい',
+'Bar Mi Casita':'バーミカシータ ミカシータ micasita',
+'Hello Heaven':'ハローヘブン helloheaven',
+'La Chance':'ラチャンス lachance',
+'Night Blood':'ナイトブラッド nightblood',
+'Cantare':'カンターレ cantare',
+'CHANGE THE WEST':'チェンジザウエスト changetheswest チェンジ',
+'FORTISSIMO':'フォルティシモ fortissimo',
+'TRUSS':'トラス truss',
+'Chill':'チル chill',
+'SECOND':'セカンド second 2nd',
+'AmusementBar Pino by SABON':'ピノバイサボン アミューズメントバーピノ pino',
+'Puchimini academy':'プチミニアカデミー puchimini',
+'charmant-シャルマン':'シャルマン charmant',
+'鏡‐Ⅱ‐':'カガミツー カガミ2 カガミニ kagami',
+'天使.com':'テンシドットコム テンシコム',
+'みつばちマーヤZ':'ミツバチマーヤゼット ミツバチマーヤ',
+'隠れBARギルド':'カクレバーギルド ギルド',
+'麻雀チャイナ池袋店':'マージャンチャイナイケブクロテン チャイナ',
+'麺処花田池袋店':'メンドコロハナダイケブクロテン ハナダ',
+'クラブ美南':'クラブミナミ ミナミ',
+'夢幻泡影':'ムゲンホウヨウ',
+'新珍味':'シンチンミ',
+'ホテルトトロ':'ホテルトトロ トトロ',
+'池袋ウエストゲートポーカー':'イケブクロウエストゲートポーカー IWGP アイダブルジーピー',
+'レガート':'レガート legato',
+'ブラックキャット':'ブラックキャット blackcat',
+'ガールズバーリゾートセカンド':'ガールズバーリゾートセカンド リゾートセカンド リゾート'
+});
+
+/* 別名・英字表記（表記違いでも引けるように） */
+Object.assign(SHOP_YOMI,{
+'ミュウミュウ':'ミュウミュウ miumiu ミュゥミュゥ',
+'ラス':'ラス RAS ラスイケブクロ',
+'ミセスジェイ':'ミセスジェイ MrsJ Mrs.J ミセスジェイイケブクロ',
+'Ms':'エムエス Ms エムズ',
+'SECOND':'セカンド SECOND 2nd',
+'WAVE':'ウェーブ WAVE ウエーブ',
+'Chill':'チル Chill チル',
+'天使.com':'テンシドットコム テンシコム'
+});
+
+/* build 31：階数調査で追加・是正されたビル名の読み */
+Object.assign(BLDG_YOMI,{
+'星野ビル':'ホシノビル',
+'第3嶺岡ビル':'ダイサンミネオカビル ダイ3ミネオカビル ミネオカビル',
+'青井ビル第2':'アオイビルダイニ アオイビル2 アオイビル',
+'三経33ビル':'サンケイサンジュウサンビル サンケイ33ビル サンケイ33 三径33ビル 三径33',
+'十二ビル':'ジュウニビル 12ビル ダイジュウニビル',
+'オリヂン':'オリジン オリヂン',
+'エルクルーセ':'エルクルーセ',
+'アークシティ池袋':'アークシティイケブクロ',
+'ローヤルハイツ':'ローヤルハイツ',
+'第三川口ビル':'ダイサンカワグチビル ダイ3カワグチビル',
+'白鳳池袋第12ビル':'ハクホウイケブクロダイジュウニビル ハクホウイケブクロダイ12ビル',
+'大昇ビル':'ダイショウビル',
+'壱ビル':'イチビル イチノビル',
+'マキタビル':'マキタビル',
+'第10松本ビル':'ダイジュウマツモトビル ダイ10マツモトビル マツモトビル',
+'ロイヤルプラザII':'ロイヤルプラザツー ロイヤルプラザ2 ロイヤルプラザニ',
+'ロイヤル西池袋':'ロイヤルニシイケブクロ'
+});
+
+/* 今回の住所調査で追加・是正されたビル名の読み */
+Object.assign(BLDG_YOMI,{
+'サンサーラ西池袋ビル':'サンサーラニシイケブクロビル',
+'東池袋ISKビル':'ヒガシイケブクロアイエスケイビル',
+'池袋東通ビル':'イケブクロトウツウビル',
+'第8前島ビル':'ダイハチマエジマビル ダイ8マエジマビル ダイハチマエシマビル',
+'第二絆ビル':'ダイニキズナビル ダイ2キズナビル',
+'十二ビル':'ジュウニビル ダイジュウニビル 12ビル',
+'第1大谷ビル':'ダイイチオオタニビル ダイ1オオタニビル',
+'徳永第三ビル':'トクナガダイサンビル トクナガダイ3ビル',
+'大国屋10池袋ビル':'ダイコクヤジュウイケブクロビル ダイコクヤ10イケブクロビル',
+'ザ・バレル池袋ビル':'ザバレルイケブクロビル バレルイケブクロ',
+'エスペランザ池袋':'エスペランザイケブクロ',
+'レスタージュ池袋':'レスタージュイケブクロ',
+'鳥駒総本店ビル':'トリコマソウホンテンビル',
+'フォーレセブンビル':'フォーレセブンビル',
+'江戸半第3パレス':'エドハンダイサンパレス エドハン3パレス',
+'梅本ビル':'ウメモトビル',
+'青井ビル':'アオイビル',
+'ホワイトビル':'ホワイトビル',
+'あけぼのビル':'アケボノビル',
+'邦正ビル':'ホウセイビル',
+'光陽ビル':'コウヨウビル',
+'梶ビル':'カジビル',
+'豊ビル':'ユタカビル',
+'秋福ビル':'シュウフクビル',
+'天幸ビル':'テンコウビル',
+'TYビル':'ティーワイビル',
+'TⅡビル':'ティーツービル ティー2ビル',
+'東京第3ビル':'トウキョウダイサンビル トウキョウダイ3ビル',
+'大晃第8ビル':'タイコウダイハチビル ダイコウダイハチビル タイコウダイ8ビル'
+});
+
+/* 追加分：欠けていたビル読み仮名 */
+Object.assign(BLDG_YOMI,{
+'葉山ビル':'ハヤマビル',
+'嶺岡ビル':'ミネオカビル',
+'池袋YSステージ':'イケブクロワイエスステージ',
+'池袋ロイヤルホテル新館':'イケブクロロイヤルホテルシンカン'
+});
+
+/* 清音・濁音どちらで打っても引けるように別読みを併記 */
+Object.assign(BLDG_YOMI,{
+'大晃第8ビル':'タイコウダイハチビル ダイコウダイ8ビル タイコウダイ8',
+'大晃第3ビル':'タイコウダイサンビル ダイコウダイ3ビル タイコウダイ3',
+'大晃第2ビル':'タイコウダイニビル ダイコウダイ2ビル タイコウダイ2',
+'ダイコウ8ビル':'ダイコウハチビル ダイコウ8ビル タイコウ8',
+'第10松本ビル':'ダイジュウマツモトビル ダイ10マツモトビル',
+'白鳳池袋第12ビル':'ハクホウイケブクロダイジュウニビル ハクホウイケブクロダイ12ビル',
+'第II絆ビル':'ダイニキズナビル ダイ2キズナビル',
+'第1絆ビル':'ダイイチキズナビル ダイ1キズナビル',
+'第2絆ビル':'ダイニキズナビル ダイ2キズナビル',
+'第3絆ビル':'ダイサンキズナビル ダイ3キズナビル',
+'江戸半第3パレス':'エドハンダイサンパレス エドハンダイ3パレス',
+'徳永第三ビル':'トクナガダイサンビル トクナガダイ3ビル',
+'徳永第5ビル':'トクナガダイゴビル トクナガダイ5ビル',
+'第三川口ビル':'ダイサンカワグチビル ダイ3カワグチビル',
+'第1大谷ビル':'ダイイチオオタニビル ダイ1オオタニビル',
+'東京第3ビル':'トウキョウダイサンビル トウキョウダイ3ビル',
+'第二大浦ビル':'ダイニオオウラビル ダイ2オオウラビル',
+'三径33ビル':'サンケイサンジュウサンビル サンケイ33ビル 三経33ビル',
+'三経33ビル':'サンケイサンジュウサンビル サンケイ33ビル サンケイ33 三径33ビル 三径33',
+'大国屋10池袋ビル':'ダイコクヤジュウイケブクロビル ダイコクヤ10イケブクロビル'
+});
+
+/* ========== 検索の正規化 ==========
+   ひらがな⇄カタカナ / 全角⇄半角 / 階数表記 / 記号ゆれ を吸収 */
+function norm(s){
+  if(!s) return '';
+  s=String(s);
+  // 全角英数字・記号 → 半角
+  s=s.replace(/[Ａ-Ｚａ-ｚ０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)});
+  // 半角カタカナ → 全角カタカナ（濁点・半濁点の合成を先に処理）
+  var HKD={'ｶﾞ':'ガ','ｷﾞ':'ギ','ｸﾞ':'グ','ｹﾞ':'ゲ','ｺﾞ':'ゴ','ｻﾞ':'ザ','ｼﾞ':'ジ','ｽﾞ':'ズ','ｾﾞ':'ゼ','ｿﾞ':'ゾ','ﾀﾞ':'ダ','ﾁﾞ':'ヂ','ﾂﾞ':'ヅ','ﾃﾞ':'デ','ﾄﾞ':'ド','ﾊﾞ':'バ','ﾋﾞ':'ビ','ﾌﾞ':'ブ','ﾍﾞ':'ベ','ﾎﾞ':'ボ','ﾊﾟ':'パ','ﾋﾟ':'ピ','ﾌﾟ':'プ','ﾍﾟ':'ペ','ﾎﾟ':'ポ','ｳﾞ':'ヴ'};
+  s=s.replace(/[ｶ-ﾎｳ][ﾞﾟ]/g,function(c){return HKD[c]||c});
+  var HK1={'｡':'。','｢':'「','｣':'」','､':'、','･':'・','ｦ':'ヲ','ｧ':'ァ','ｨ':'ィ','ｩ':'ゥ','ｪ':'ェ','ｫ':'ォ','ｬ':'ャ','ｭ':'ュ','ｮ':'ョ','ｯ':'ッ','ｰ':'ー','ｱ':'ア','ｲ':'イ','ｳ':'ウ','ｴ':'エ','ｵ':'オ','ｶ':'カ','ｷ':'キ','ｸ':'ク','ｹ':'ケ','ｺ':'コ','ｻ':'サ','ｼ':'シ','ｽ':'ス','ｾ':'セ','ｿ':'ソ','ﾀ':'タ','ﾁ':'チ','ﾂ':'ツ','ﾃ':'テ','ﾄ':'ト','ﾅ':'ナ','ﾆ':'ニ','ﾇ':'ヌ','ﾈ':'ネ','ﾉ':'ノ','ﾊ':'ハ','ﾋ':'ヒ','ﾌ':'フ','ﾍ':'ヘ','ﾎ':'ホ','ﾏ':'マ','ﾐ':'ミ','ﾑ':'ム','ﾒ':'メ','ﾓ':'モ','ﾔ':'ヤ','ﾕ':'ユ','ﾖ':'ヨ','ﾗ':'ラ','ﾘ':'リ','ﾙ':'ル','ﾚ':'レ','ﾛ':'ロ','ﾜ':'ワ','ﾝ':'ン'};
+  s=s.replace(/[\uFF61-\uFF9F]/g,function(c){return HK1[c]||c});
+  // ひらがな → カタカナ（検索キーをカタカナに統一）
+  s=s.replace(/[\u3041-\u3096]/g,function(c){return String.fromCharCode(c.charCodeAt(0)+0x60)});
+  // 階数表記の統一： 階/Ｆ/ｆ → f
+  s=s.replace(/階/g,'f');
+  // 長音・ハイフン類をすべて同一視
+  s=s.replace(/[\u30FC\u2010-\u2015\u2212\uFF0D\-]/g,'');
+  // 空白と中黒を除去
+  s=s.replace(/[\s\u3000\u30FB\u00B7]/g,'');
+  return s.toLowerCase();
+}
+
+/* ビル名の号数ゆれ（第II / 第2 / 第二）を統一 */
+function normalizeBldg(s){
+  if(!s) return '';
+  return String(s)
+    .replace(/第\s*(II|Ⅱ|２|2)/g,'第二')
+    .replace(/第\s*(I|Ⅰ|１|1)(?![IⅠ])/g,'第一')
+    .replace(/第\s*(III|Ⅲ|３|3)/g,'第三')
+    .replace(/第\s*(IV|Ⅳ|４|4)/g,'第四')
+    .replace(/第\s*(５|5)/g,'第五')
+    .replace(/第\s*(８|8)/g,'第八')
+    .replace(/第\s*(10|１０)/g,'第十');
+}
+
+/* 検索対象の文字列を1店舗ぶん組み立てる */
+function haystack(s){
+  return [
+    s.name,
+    SHOP_YOMI[s.name]||'',
+    s.bldg||'',
+    normalizeBldg(s.bldg||''),
+    BLDG_YOMI[s.bldg]||'',
+    s.addr||'',
+    (s.addr||'').replace(/東京都豊島区/,''),
+    s.floor||''
+  ].join(' ');
+}
+
+/* ========== 検索 ========== */
+/* 「バー」「クラブ」等の共通接頭語を落とした核を返す
+   norm() を通した後の文字列に対して使うため、接頭語側も norm() で揃える */
+var PREFIX_RAW=['ガールズバー','アミューズメントバー','ミュージックバー','コンカフェ','ラウンジ','クラブ','スナック','カフェ','ホテル','バー',
+                'girlsbar','amusementbar','musicbar','lounge','club','snack','cafe','hotel','bar'];
+var PREFIXES=null;
+function core(t){
+  if(!PREFIXES){
+    PREFIXES=PREFIX_RAW.map(norm).filter(Boolean).sort(function(a,b){return b.length-a.length});
+  }
+  var v=t;
+  for(var i=0;i<3;i++){
+    var hit=false;
+    for(var j=0;j<PREFIXES.length;j++){
+      var p=PREFIXES[j];
+      if(p && v.length>p.length && v.indexOf(p)===0){ v=v.slice(p.length); hit=true; break; }
+    }
+    if(!hit) break;
+  }
+  return v||t;
+}
+
+function scoreOf(s,nq,rawq){
+  var n=norm(s.name), y=norm(SHOP_YOMI[s.name]||'');
+  var b=norm(normalizeBldg(s.bldg||'')), by=norm(normalizeBldg(BLDG_YOMI[s.bldg]||''));
+  var a=norm(s.addr||''), f=norm(s.floor||'');
+  var cn=core(n), cy=core(y);
+
+  // 店名系：合算せず最も強い一致だけを採る（語頭ほど高い）
+  function m(str,cstr){
+    if(!str) return 0;
+    if(str===nq) return 1000;
+    if(cstr && cstr===nq) return 900;
+    if(str.indexOf(nq)===0) return 800;
+    if(cstr && cstr.indexOf(nq)===0) return 700;
+    if(str.indexOf(nq)!==-1) return 400;
+    return 0;
+  }
+  var nameScore=Math.max(m(n,cn), m(y,cy)*0.95);
+
+  // 建物系
+  var bldgScore=0;
+  if(b===nq) bldgScore=300;
+  else if(b.indexOf(nq)===0) bldgScore=240;
+  else if(b.indexOf(nq)!==-1) bldgScore=180;
+  else if(by.indexOf(nq)!==-1) bldgScore=140;
+
+  var sc=Math.max(nameScore,bldgScore);
+  if(sc===0){
+    if(a.indexOf(nq)!==-1) sc=100;
+    else if(f.indexOf(nq)!==-1) sc=60;
+  }else{
+    if(a.indexOf(nq)!==-1) sc+=20;
+    if(f.indexOf(nq)!==-1) sc+=10;
+    if(nameScore>0 && bldgScore>0) sc+=30;
+  }
+  // 核が短い店ほど、その語の占める比重が高い
+  if(sc>0 && cn.length) sc+=Math.max(0,30-cn.length);
+  return sc;
+}
+
+function doSearch(q){
+  var query=(q!==undefined?q:searchInput.value).trim();
+  if(!query){render(SHOPS);return}
+  // 空白区切りのAND検索
+  var terms=query.split(/[\s\u3000]+/).filter(Boolean)
+    .map(function(t){return norm(normalizeBldg(t))}).filter(Boolean);
+  if(terms.length===0){render(SHOPS);return}
+
+  var scored=[];
+  SHOPS.forEach(function(s){
+    var hay=norm(haystack(s));
+    var ok=true, total=0;
+    for(var i=0;i<terms.length;i++){
+      if(hay.indexOf(terms[i])===-1){ok=false;break}
+      total+=scoreOf(s,terms[i],query);
+    }
+    if(ok) scored.push({s:s,score:total});
+  });
+  scored.sort(function(a,b){return b.score-a.score});
+  render(scored.map(function(x){return x.s}));
+}
+
+const list=document.getElementById('list');
+const count=document.getElementById('total');
+const searchInput=document.getElementById('search');
+
+/* ===== 池袋の目印（方向感覚の基準になる建物・出口） ===== */
+var LANDMARKS=[
+ {n:'池袋駅 西口',      lat:35.73013, lng:139.70855, t:'exit'},
+ {n:'池袋駅 東口',      lat:35.72908, lng:139.71350, t:'exit'},
+ {n:'池袋駅 北口',      lat:35.73180, lng:139.71000, t:'exit'},
+ {n:'池袋駅 南口',      lat:35.72700, lng:139.71080, t:'exit'},
+ {n:'東武百貨店',       lat:35.72950, lng:139.70950, t:'bldg'},
+ {n:'西武池袋本店',     lat:35.72880, lng:139.71270, t:'bldg'},
+ {n:'池袋PARCO',       lat:35.72910, lng:139.71390, t:'bldg'},
+ {n:'ビックカメラ本店',  lat:35.73070, lng:139.71130, t:'bldg'},
+ {n:'東京芸術劇場',     lat:35.73180, lng:139.70780, t:'bldg'},
+ {n:'池袋西口公園',     lat:35.73150, lng:139.70890, t:'bldg'},
+ {n:'ロサ会館',        lat:35.73220, lng:139.70950, t:'bldg'},
+ {n:'サンシャイン60',   lat:35.72890, lng:139.71950, t:'bldg'},
+ {n:'サンシャインシティ', lat:35.72930, lng:139.71880, t:'bldg'},
+ {n:'Hareza池袋',      lat:35.73050, lng:139.71550, t:'bldg'},
+ {n:'池袋警察署',       lat:35.73280, lng:139.71430, t:'bldg'},
+ {n:'豊島区役所',       lat:35.73070, lng:139.71620, t:'bldg'}
+];
+
+/* ===== 地図アプリを確認ダイアログなしで開くためのURL ===== */
+var IS_IOS=/iPad|iPhone|iPod/.test(navigator.userAgent||'');
+function mapsUrl(s){
+  // iOSは maps.apple.com なら「開きますか？」を挟まず地図アプリへ渡る
+  if(IS_IOS) return 'maps://?q='+encodeURIComponent(s.name)+'&ll='+s.lat+','+s.lng;
+  return 'geo:'+s.lat+','+s.lng+'?q='+s.lat+','+s.lng+'('+encodeURIComponent(s.name)+')';
+}
+function routeUrl(s){
+  if(IS_IOS) return 'maps://?daddr='+s.lat+','+s.lng+'&dirflg=w';
+  return 'https://www.google.com/maps/dir/?api=1&destination='+s.lat+','+s.lng+'&travelmode=walking';
+}
+
+/* ===== 距離・方位 ===== */
+function distM(a,b){
+  var R=6371e3;
+  var d1=(b[0]-a[0])*Math.PI/180, d2=(b[1]-a[1])*Math.PI/180;
+  var x=Math.sin(d1/2)*Math.sin(d1/2)+Math.cos(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.sin(d2/2)*Math.sin(d2/2);
+  return 2*R*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+function bearing(a,b){
+  var y=Math.sin((b[1]-a[1])*Math.PI/180)*Math.cos(b[0]*Math.PI/180);
+  var x=Math.cos(a[0]*Math.PI/180)*Math.sin(b[0]*Math.PI/180)-
+        Math.sin(a[0]*Math.PI/180)*Math.cos(b[0]*Math.PI/180)*Math.cos((b[1]-a[1])*Math.PI/180);
+  return (Math.atan2(y,x)*180/Math.PI+360)%360;
+}
+var DIRS=['北','北東','東','南東','南','南西','西','北西'];
+function dirName(deg){ return DIRS[Math.round(deg/45)%8] }
+function dirArrow(deg){ return ['↑','↗','→','↘','↓','↙','←','↖'][Math.round(deg/45)%8] }
+function fmtM(m){ return m<1000 ? Math.round(m)+'m' : (m/1000).toFixed(1)+'km' }
+
+/* 徒歩の所要目安（分速80m） */
+function walkMin(m){ return Math.max(1,Math.round(m/80)) }
+
+/* 現在地（取れなければ池袋駅を基準にする） */
+var userPos=null;
+function basePos(){ return userPos || CENTER }
+function distOf(s){ return distM(basePos(),[s.lat,s.lng]) }
+function distClass2(s){ var d=distOf(s); return d<200?'near':d<400?'mid':'far' }
+
+/* その店に一番近い目印 */
+function nearestLandmark(s){
+  var best=null,bd=1e9;
+  for(var i=0;i<LANDMARKS.length;i++){
+    var d=distM([s.lat,s.lng],[LANDMARKS[i].lat,LANDMARKS[i].lng]);
+    if(d<bd){bd=d;best=LANDMARKS[i]}
+  }
+  if(!best) return '';
+  var b=bearing([best.lat,best.lng],[s.lat,s.lng]);
+  return best.n+'から'+dirName(b)+'へ'+fmtM(bd);
+}
+
+/* ===== 地図 ===== */
+var map=null, markers=[], markerByIndex={}, mapAvailable=true;
+var lmLayer=null, meMarker=null, meCircle=null, routeLine=null, selectedIdx=null;
+
+function initMap(){
+  if(typeof L==='undefined'){
+    mapAvailable=false;
+    var el=document.getElementById('map');
+    el.classList.add('folded'); el.style.display='none';
+    var btn=document.getElementById('mapToggle'); if(btn) btn.style.display='none';
+    var sel=document.getElementById('mapSrc'); if(sel) sel.style.display='none';
+    return;
+  }
+  map=L.map('map',{zoomControl:true,attributionControl:true}).setView(CENTER,17);
+
+  var SOURCES=[
+    {key:'osmjp', name:'詳細',    url:'https://tile.openstreetmap.jp/{z}/{x}/{y}.png', max:19, attr:'&copy; OpenStreetMap Japan'},
+    {key:'osm',   name:'OSM',    url:'https://tile.openstreetmap.org/{z}/{x}/{y}.png', max:19, attr:'&copy; OpenStreetMap'},
+    {key:'gsi',   name:'地理院',  url:'https://cyberjapandata.gsi.go.jp/xyz/std/{z}/{x}/{y}.png', max:18, attr:'国土地理院'},
+    {key:'pale',  name:'淡色',    url:'https://cyberjapandata.gsi.go.jp/xyz/pale/{z}/{x}/{y}.png', max:18, attr:'国土地理院'},
+    {key:'carto', name:'シンプル', url:'https://basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png', max:19, attr:'&copy; CARTO'},
+    {key:'photo', name:'航空写真', url:'https://cyberjapandata.gsi.go.jp/xyz/seamlessphoto/{z}/{x}/{y}.jpg', max:18, attr:'国土地理院'}
+  ];
+  var current=null, srcIndex=0, failCount=0, switching=false;
+  var srcSel=document.getElementById('mapSrc');
+
+  function makeLayer(src){
+    var lyr=L.tileLayer(src.url,{maxZoom:20,maxNativeZoom:src.max,attribution:src.attr});
+    lyr.on('tileerror',function(){
+      failCount++;
+      if(failCount>=4 && !switching && srcIndex<SOURCES.length-1){
+        switching=true; srcIndex++; failCount=0; useSource(srcIndex);
+        setTimeout(function(){switching=false},1500);
+      }
+    });
+    lyr.on('tileload',function(){failCount=0});
+    return lyr;
+  }
+  function useSource(i){
+    if(current) map.removeLayer(current);
+    current=makeLayer(SOURCES[i]); current.addTo(map);
+    try{localStorage.setItem('mapSrc',SOURCES[i].key)}catch(e){}
+    if(srcSel) srcSel.value=SOURCES[i].key;
+  }
+  var startKey='osmjp';
+  try{ startKey=localStorage.getItem('mapSrc')||'osmjp' }catch(e){}
+  for(var si=0;si<SOURCES.length;si++){ if(SOURCES[si].key===startKey){srcIndex=si;break} }
+  useSource(srcIndex);
+  if(srcSel) srcSel.addEventListener('change',function(){
+    for(var i=0;i<SOURCES.length;i++){
+      if(SOURCES[i].key===this.value){srcIndex=i;failCount=0;useSource(i);break}
+    }
+  });
+
+  /* 目印レイヤー */
+  lmLayer=L.layerGroup();
+  LANDMARKS.forEach(function(l){
+    var isExit=l.t==='exit';
+    L.marker([l.lat,l.lng],{
+      icon:L.divIcon({className:'lm-icon',
+        html:'<span class="lm '+(isExit?'exit':'bldg')+'">'+(isExit?'🚉':'🏢')+' '+l.n+'</span>',
+        iconSize:null,iconAnchor:[0,8]}),
+      interactive:false, zIndexOffset:-500
+    }).addTo(lmLayer);
+  });
+  lmLayer.addTo(map);
+  map.on('zoomend',function(){
+    if(map.getZoom()<16){ if(map.hasLayer(lmLayer)) map.removeLayer(lmLayer) }
+    else { if(!map.hasLayer(lmLayer)) lmLayer.addTo(map) }
+  });
+
+  /* 店舗マーカー */
+  SHOPS.forEach(function(s,i){
+    var m=L.circleMarker([s.lat,s.lng],{
+      radius:8,color:'#fff',weight:2.5,fillColor:'#CC1514',fillOpacity:1
+    });
+    m.on('click',function(){ selectShop(i,false) });
+    markers.push(m); markerByIndex[i]=m;
+  });
+
+  showMarkers(SHOPS);
+  setTimeout(function(){map.invalidateSize()},200);
+  startLocate();
+}
+
+function popupHtml(s,i){
+  var d=distOf(s), b=bearing(basePos(),[s.lat,s.lng]);
+  var here=userPos?'現在地':'池袋駅';
+  return '<b>'+esc(s.name)+'</b>'+(s.floor?' <span class="pf">'+esc(s.floor)+'</span>':'')+
+    '<br>'+esc(s.bldg||'')+
+    (s.addr?'<br><small>'+esc(s.addr)+'</small>':'')+
+    '<br><span class="pd">'+dirArrow(b)+' '+here+'から'+dirName(b)+' '+fmtM(d)+'・徒歩'+walkMin(d)+'分</span>'+
+    '<br><small>'+esc(nearestLandmark(s))+'</small>'+
+    '<br><a href="'+routeUrl(s)+'">経路案内を開く</a>';
+}
+
+/* 店を選ぶ：地図を寄せ、現在地から線を引く */
+function selectShop(i,fromList){
+  selectedIdx=i;
+  var s=SHOPS[i], m=markerByIndex[i];
+  if(map&&m){
+    m.bindPopup(popupHtml(s,i)).openPopup();
+    if(fromList) map.setView(m.getLatLng(),18,{animate:true});
+  }
+  drawRoute();
+  focusCard(i);
+}
+
+function drawRoute(){
+  if(!map) return;
+  if(routeLine){ map.removeLayer(routeLine); routeLine=null }
+  if(selectedIdx===null || !userPos) return;
+  var s=SHOPS[selectedIdx];
+  routeLine=L.polyline([userPos,[s.lat,s.lng]],{
+    color:'#CC1514',weight:3,opacity:.8,dashArray:'8,6'
+  }).addTo(map);
+}
+
+/* 現在地 */
+function startLocate(){
+  if(!navigator.geolocation) return;
+  navigator.geolocation.watchPosition(function(p){
+    var first=!userPos;
+    userPos=[p.coords.latitude,p.coords.longitude];
+    if(!map) return;
+    if(meMarker) map.removeLayer(meMarker);
+    if(meCircle) map.removeLayer(meCircle);
+    meCircle=L.circle(userPos,{radius:Math.min(p.coords.accuracy||30,80),
+      color:'#1a73e8',weight:1,fillColor:'#1a73e8',fillOpacity:.12}).addTo(map);
+    meMarker=L.circleMarker(userPos,{radius:7,color:'#fff',weight:3,
+      fillColor:'#1a73e8',fillOpacity:1}).addTo(map);
+    meMarker.bindPopup('現在地');
+    drawRoute();
+    if(first){ map.setView(userPos,17); doSearch(searchInput.value) }
+    else { render(lastShops,false) }
+  },function(){},{enableHighAccuracy:true,maximumAge:15000,timeout:12000});
+}
+
+function showMarkers(shops,fit){
+  if(!map)return;
+  if(fit===undefined) fit=true;
+  markers.forEach(function(m){if(map.hasLayer(m))map.removeLayer(m)});
+  var pts=[];
+  shops.forEach(function(s){
+    var i=SHOPS.indexOf(s); var m=markerByIndex[i];
+    if(m){m.addTo(map);pts.push([s.lat,s.lng])}
+  });
+  if(pts.length===0){map.setView(CENTER,16);return}
+  if(!fit) return;
+  if(pts.length===1){map.setView(pts[0],18);return}
+  if(pts.length===SHOPS.length){ return }
+  try{map.fitBounds(pts,{padding:[35,35],maxZoom:18})}catch(e){}
+}
+
+function focusCard(i){
+  var el=document.querySelector('[data-idx="'+i+'"]');
+  if(!el)return;
+  document.querySelectorAll('.shop-card.hit').forEach(function(c){c.classList.remove('hit')});
+  el.classList.add('hit');
+  el.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
+/* ===== 描画 ===== */
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+
+var lastShops=[];
+function render(shops,fitMap){
+  if(fitMap===undefined) fitMap=true;
+  lastShops=shops;
+  count.textContent=shops.length;
+  list.innerHTML='';
+  if(shops.length===0){
+    list.innerHTML='<div class="no-result"><div class="big">😕</div>該当する店舗がありません</div>';
+    showMarkers([],false); return;
+  }
+  var here=userPos?'現在地':'池袋駅';
+  shops.forEach(function(s){
+    var idx=SHOPS.indexOf(s);
+    var d=distOf(s), b=bearing(basePos(),[s.lat,s.lng]);
+    var floorHtml=s.floor?'<span class="floor">'+esc(s.floor)+'</span>':'';
+    var addrHtml=s.addr?'<span class="addr">'+esc(s.addr)+'</span>':'';
+    var card=document.createElement('div');
+    card.className='shop-card';
+    card.setAttribute('data-idx',idx);
+    card.innerHTML=
+      '<div class="name">'+esc(s.name)+floorHtml+'</div>'+
+      '<div class="meta"><span class="bldg">'+esc(s.bldg||'')+addrHtml+'</span>'+
+        '<span class="dist-badge '+distClass2(s)+'">'+dirArrow(b)+' '+fmtM(d)+'</span></div>'+
+      '<div class="guide">'+dirArrow(b)+' '+here+'から'+dirName(b)+'・徒歩'+walkMin(d)+'分'+
+        '<span class="lmk">'+esc(nearestLandmark(s))+'</span></div>'+
+      '<div class="actions">'+
+        '<a class="btn-map" href="'+mapsUrl(s)+'">📍 地図で開く</a>'+
+        '<a class="btn-route" href="'+routeUrl(s)+'">🚶 経路案内</a>'+
+      '</div>';
+    card.addEventListener('click',function(e){
+      if(e.target.tagName==='A')return;
+      selectShop(idx,true);
+    });
+    list.appendChild(card);
+  });
+  var f=document.createElement('div');
+  f.className='build'; f.textContent='build 31';
+  list.appendChild(f);
+  showMarkers(shops,fitMap);
+}
+
+/* ===== 地図の折り畳み ===== */
+var mapEl=document.getElementById('map');
+var mapBtn=document.getElementById('mapToggle');
+function setFold(folded){
+  if(!mapAvailable) return;
+  if(folded) mapEl.classList.add('folded'); else mapEl.classList.remove('folded');
+  mapBtn.style.opacity = folded ? '.55' : '1';
+  try{ localStorage.setItem('mapFolded', folded?'1':'0') }catch(e){}
+  if(!folded && map) setTimeout(function(){map.invalidateSize()},220);
+}
+if(mapBtn) mapBtn.addEventListener('click',function(){
+  setFold(!mapEl.classList.contains('folded'));
+});
+var startFolded=false;
+try{ startFolded = localStorage.getItem('mapFolded')==='1' }catch(e){}
+
+/* ===== 検索クリア ===== */
+var clearBtn=document.getElementById('clearBtn');
+function syncClear(){ if(searchInput.value.trim()) clearBtn.classList.add('on'); else clearBtn.classList.remove('on') }
+if(clearBtn) clearBtn.addEventListener('click',function(){
+  searchInput.value=''; syncClear(); selectedIdx=null; drawRoute();
+  render(SHOPS); searchInput.focus();
+});
+
+/* ===== 起動 ===== */
+searchInput.addEventListener('input',function(){syncClear();doSearch(this.value)});
+initMap();
+setFold(startFolded);
+render(SHOPS);
+window.addEventListener('resize',function(){if(map)map.invalidateSize()});
+</script>
+<script>
+/* 旧 Service Worker が地図タイルを止めていたため、
+   一度だけ古い世代を完全に掃除してから新しい sw.js を登録する */
+(function(){
+  if(!('serviceWorker' in navigator)) return;
+  var FLAG='swReset13';
+  var done=false;
+  try{ done = localStorage.getItem(FLAG)==='1' }catch(e){}
+
+  function registerNew(){
+    navigator.serviceWorker.register('./sw.js').then(function(reg){
+      reg.addEventListener('updatefound',function(){
+        var w=reg.installing;
+        if(!w) return;
+        w.addEventListener('statechange',function(){
+          if(w.state==='installed' && navigator.serviceWorker.controller){
+            w.postMessage('SKIP_WAITING');
+          }
+        });
+      });
+    }).catch(function(){});
+  }
+
+  if(done){ registerNew(); return }
+
+  Promise.resolve()
+    .then(function(){
+      return navigator.serviceWorker.getRegistrations().then(function(rs){
+        return Promise.all(rs.map(function(r){ return r.unregister().catch(function(){}) }));
+      });
+    })
+    .then(function(){
+      if(window.caches && caches.keys){
+        return caches.keys().then(function(ks){
+          return Promise.all(ks.map(function(k){ return caches.delete(k).catch(function(){}) }));
+        });
+      }
+    })
+    .then(function(){
+      try{ localStorage.setItem(FLAG,'1') }catch(e){}
+      registerNew();
+    })
+    .catch(function(){ registerNew() });
+})();
+</script>
+</body>
+</html>

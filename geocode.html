@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>どないやマップ ジオコーディング v2</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--red:#CC1514;--bg:#f6f5f2}
+body{font-family:-apple-system,'Hiragino Sans',sans-serif;background:var(--bg);color:#111;
+ font-size:14px;line-height:1.6;padding:calc(env(safe-area-inset-top) + 14px) 14px calc(env(safe-area-inset-bottom) + 40px)}
+h1{font-size:18px}
+.lead{font-size:12px;color:#666;margin-bottom:16px}
+.card{background:#fff;border-radius:10px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px rgba(0,0,0,.07)}
+.card h2{font-size:11px;letter-spacing:.12em;color:var(--red);margin-bottom:10px}
+button{width:100%;border:0;border-radius:9px;padding:14px;font-size:15px;font-weight:700;
+ background:var(--red);color:#fff;margin-top:8px;-webkit-appearance:none}
+button:disabled{background:#bbb}
+button.sub{background:#eee;color:#333}
+.bar{height:10px;background:#e6e2da;border-radius:5px;overflow:hidden;margin:10px 0}
+.bar i{display:block;height:100%;width:0;background:var(--red);transition:width .2s}
+.row{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid #f0eee9;font-size:13px}
+.row:last-child{border:0}
+.ok{color:#1b7f3b;font-weight:700}.ng{color:#c62828;font-weight:700}.wa{color:#b26a00;font-weight:700}
+pre{background:#111;color:#8f8;padding:10px;border-radius:8px;font-size:10px;
+ max-height:220px;overflow:auto;white-space:pre-wrap;word-break:break-all;margin-top:8px}
+textarea{width:100%;height:180px;font-family:ui-monospace,monospace;font-size:10px;
+ border:1px solid #ddd;border-radius:8px;padding:8px}
+.note{font-size:11px;color:#777;margin-top:8px}
+.warn{background:#fff4e5;border-radius:8px;padding:10px;font-size:12px;color:#8a5300;margin-bottom:10px}
+</style>
+</head>
+<body>
+
+<h1>ジオコーディング v2</h1>
+<p class="lead">前回の失敗はService Workerが通信を横取りしていたためです。まず①で解除してから②を実行してください。</p>
+
+<div class="card">
+  <h2>① 準備</h2>
+  <div class="row"><span>Service Worker</span><b id="sw-st">確認中</b></div>
+  <div class="row"><span>登録数</span><b id="sw-n">-</b></div>
+  <button id="kill">Service Workerを解除する</button>
+  <p class="note">解除後に自動で再読み込みします。もう一度このページが開いたら②へ進んでください。</p>
+</div>
+
+<div class="card">
+  <h2>② 変換</h2>
+  <div class="row"><span>店舗数</span><b id="n-shop">-</b></div>
+  <div class="row"><span>変換する住所</span><b id="n-addr">-</b></div>
+  <div class="row"><span>成功</span><b id="n-ok" class="ok">0</b></div>
+  <div class="row"><span>失敗</span><b id="n-ng" class="ng">0</b></div>
+  <div class="bar"><i id="bar"></i></div>
+  <button id="run">変換をはじめる</button>
+  <button class="sub" id="test">先に1件だけ試す</button>
+</div>
+
+<div class="card" id="c-log" style="display:none">
+  <h2>ログ</h2>
+  <pre id="log"></pre>
+</div>
+
+<div class="card" id="c-out" style="display:none">
+  <h2>結果</h2>
+  <p class="note">下の内容をすべてコピーしてチャットに貼ってください。</p>
+  <textarea id="out" readonly></textarea>
+  <button id="copy">すべてコピー</button>
+  <button class="sub" id="share">共有・保存</button>
+</div>
+
+<script>
+var SHOPS = [{"name":"池袋ウエストゲートポーカー","bldg":"サンサーラ西池袋ビル","addr":"東京都豊島区西池袋3-26-6","floor":"2F","lat":35.7291561,"lng":139.7044431},{"name":"アイドルリーグ","bldg":"大昇ビル","addr":"東京都豊島区西池袋1-40-1","floor":"2F","lat":35.7326927,"lng":139.7099862},{"name":"クラブアルカナ","bldg":"ロイヤル西池袋","addr":"東京都豊島区西池袋1-29-3","floor":"5F","lat":35.7301653,"lng":139.709385},{"name":"R","bldg":"江戸半第3パレス","addr":"東京都豊島区池袋2-4-3","floor":"3F","lat":35.7358426,"lng":139.7084043},{"name":"コンカフェ Anokoro Memories","bldg":"青井ビル第2","addr":"東京都豊島区西池袋1-34-5","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"AGASA","bldg":"葉山ビル","addr":"東京都豊島区池袋2-41-2","floor":"7F","lat":35.7301653,"lng":139.709385},{"name":"AIR PORT IKB","bldg":"星野ビル","addr":"東京都豊島区西池袋1-36-10","floor":"1F・2F","lat":35.7301653,"lng":139.709385},{"name":"アイリス","bldg":"ザ・バレル池袋ビル","addr":"東京都豊島区池袋2-48-2","floor":"8F","lat":35.7358426,"lng":139.7084043},{"name":"アルドーレ","bldg":"マキビル","addr":"東京都豊島区西池袋1-41-2","floor":"2F","lat":35.7301653,"lng":139.709385},{"name":"ラウンジアクター","bldg":"第一絆ビル","addr":"東京都豊島区池袋2-10-3","floor":"4F","lat":35.7358426,"lng":139.7084043},{"name":"ATARAS - アタラス","bldg":"ローヤルハイツ","addr":"東京都豊島区池袋2-14-11","floor":"1F・102","lat":35.7323296,"lng":139.7208742},{"name":"アズール","bldg":"葉山ビル","addr":"東京都豊島区池袋2-41-2","floor":"6F・602","lat":35.7358426,"lng":139.7084043},{"name":"あふたーすくーる本店","bldg":"白鳳池袋第12ビル","addr":"東京都豊島区池袋2-47-1","floor":"1F","lat":35.7136782,"lng":139.7293461},{"name":"Under Dog Poker","bldg":"マキタビル","addr":"東京都豊島区池袋2-42-7","floor":"B1F","lat":35.7363563,"lng":139.7176348},{"name":"Aravan Lilian","bldg":"三経33ビル","addr":"東京都豊島区東池袋1-4-2","floor":"7F","lat":35.7290721,"lng":139.7209701},{"name":"アテナ池袋","bldg":"十二ビル","addr":"東京都豊島区池袋2-12-13","floor":"4F","lat":35.7358426,"lng":139.7084043},{"name":"アンティーク","bldg":"TOP池袋ビル","addr":"東京都豊島区西池袋1-41-5","floor":"4F","lat":35.7311554,"lng":139.7149383},{"name":"アルマージ","bldg":"アークシティ池袋","addr":"東京都豊島区池袋2-45-1","floor":"2F・202","lat":35.7358426,"lng":139.7084043},{"name":"あにぽり 池袋店","bldg":"ザ・バレル池袋ビル","addr":"東京都豊島区池袋2-48-2","floor":"4F","lat":35.7358426,"lng":139.7084043},{"name":"アイスプリンス","bldg":"第三川口ビル","addr":"東京都豊島区池袋2-7-5","floor":"5F","lat":35.7243629,"lng":139.721657},{"name":"バーARIKA","bldg":"大晃第2ビル","addr":"東京都豊島区池袋2-12-1","floor":"4F","lat":35.7358426,"lng":139.7084043},{"name":"クラブアミューズ","bldg":"本州ビル","addr":"東京都豊島区池袋2-2-7","floor":"3F","lat":35.7358426,"lng":139.7084043},{"name":"OWL","bldg":"エルクルーセ","addr":"東京都豊島区西池袋1-23-1","floor":"7F","lat":35.7317524,"lng":139.7101113},{"name":"アマン","bldg":"TOP池袋ビル","addr":"東京都豊島区西池袋1-41-5","floor":"4F","lat":35.7301653,"lng":139.709385},{"name":"アルカロイド","bldg":"KS2ビル","addr":"東京都豊島区西池袋1-41-8","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"Bar15 イチゴ","bldg":"第一絆ビル","addr":"東京都豊島区池袋2-10-3","floor":"3F","lat":35.7358426,"lng":139.7084043},{"name":"池袋クラス","bldg":"オリヂン","addr":"東京都豊島区西池袋1-35-3","floor":"1F・2F・3F","lat":35.7301653,"lng":139.709385},{"name":"BARイビザトウキョウ","bldg":"十二ビル","addr":"東京都豊島区池袋2-12-13","floor":"1F・101","lat":35.7358426,"lng":139.7084043},{"name":"Bar IXS","bldg":"ゆう文ビル","addr":"東京都豊島区池袋2-3-3","floor":"2F","lat":35.731312,"lng":139.7075851},{"name":"イザカバー","bldg":"天幸ビル","addr":"東京都豊島区西池袋1-41-1","floor":"4F","lat":35.7327424,"lng":139.7104544},{"name":"イケショウ","bldg":"壱ビル","addr":"東京都豊島区池袋2-5-4","floor":"B1F","lat":35.7358426,"lng":139.7084043},{"name":"EWAVE","bldg":"ロイヤルプラザII","addr":"東京都豊島区西池袋3-31-15","floor":"7F","lat":35.7323296,"lng":139.7208742},{"name":"池猫 ~池袋の猫たち~ café&bar","bldg":"第10松本ビル","addr":"東京都豊島区池袋2-53-10","floor":"7F","lat":35.7363563,"lng":139.7176348},{"name":"苺泥棒","bldg":"嶺岡ビル","addr":"東京都豊島区池袋2-42-1","floor":"5F","lat":35.7136782,"lng":139.7293461},{"name":"1年5組","bldg":"TOP池袋ビル","addr":"東京都豊島区西池袋1-41-5","floor":"5F","lat":35.7301653,"lng":139.709385},{"name":"Eねぇ","bldg":"ロイヤルプラザII","addr":"東京都豊島区西池袋3-31-15","floor":"6F","lat":35.7291561,"lng":139.7044431},{"name":"バーイロハ","bldg":"","addr":"東京都豊島区西池袋1-31-6","floor":"B1F","lat":35.7284313,"lng":139.7017131},{"name":"ウォンテッド","bldg":"第3絆ビル","addr":"東京都豊島区池袋1-1-4","floor":"8F","lat":35.7358426,"lng":139.7084043},{"name":"ウルトラレアキス","bldg":"江戸半第3パレス","addr":"東京都豊島区池袋2-4-3","floor":"4F","lat":35.7358426,"lng":139.7084043},{"name":"WAVE","bldg":"マキタビル","addr":"東京都豊島区池袋2-42-7","floor":"B1F","lat":35.7363563,"lng":139.7176348},{"name":"ELF","bldg":"TYビル","addr":"東京都豊島区西池袋1-38-6","floor":"6F","lat":35.7301653,"lng":139.709385},{"name":"エルトウキョウ","bldg":"第一絆ビル","addr":"東京都豊島区池袋2-10-3","floor":"2F","lat":35.7358426,"lng":139.7084043},{"name":"バーラウンジエース","bldg":"ザ・バレル池袋ビル","addr":"東京都豊島区池袋2-48-2","floor":"6F","lat":35.7358426,"lng":139.7084043},{"name":"Ms","bldg":"あけぼのビル","addr":"東京都豊島区池袋2-5-9","floor":"1F","lat":35.7358426,"lng":139.7084043},{"name":"ラピス","bldg":"第10松本ビル","addr":"東京都豊島区池袋2-53-1","floor":"6F","lat":35.7136782,"lng":139.7293461},{"name":"ミセスジェイ","bldg":"","addr":"東京都豊島区西池袋1-41-8","floor":"2F","lat":35.7301653,"lng":139.709385},{"name":"ラス","bldg":"第1絆ビル","addr":"東京都豊島区池袋2-10-3","floor":"B1F","lat":35.7358426,"lng":139.7084043},{"name":"ラナ","bldg":"第3絆ビル","addr":"東京都豊島区池袋1-1-4","floor":"6F","lat":35.73452,"lng":139.7099304},{"name":"プチミニヨン","bldg":"パールシティビル","addr":"東京都豊島区東池袋1-28-6","floor":"B1F","lat":35.7296839,"lng":139.7162331},{"name":"ホテルトトロ","bldg":"","addr":"東京都豊島区池袋2-64-15","floor":"","lat":35.7363563,"lng":139.7176348},{"name":"Shula'na Sports Concept Bar","bldg":"TYビル","addr":"東京都豊島区東池袋1-40-11","floor":"4F","lat":35.7301653,"lng":139.709385},{"name":"新珍味","bldg":"","addr":"東京都豊島区西池袋1-23-4","floor":"1F","lat":35.7320419,"lng":139.7099449},{"name":"GOLD CHIHUAHUA 2nd","bldg":"第二絆ビル","addr":"東京都豊島区池袋2-47-12","floor":"8F-A","lat":35.7358426,"lng":139.7084043},{"name":"NATALIS(ナタリス)","bldg":"天幸ビル","addr":"東京都豊島区西池袋1-41-1","floor":"6F","lat":35.7327424,"lng":139.7104544},{"name":"隠れBARギルド","bldg":"ホワイトビル","addr":"東京都豊島区池袋2-56-8","floor":"B1F-D","lat":35.7363563,"lng":139.7176348},{"name":"Hyakka","bldg":"本州ビル","addr":"東京都豊島区池袋2-2-7","floor":"3F","lat":35.7358426,"lng":139.7084043},{"name":"La Chance","bldg":"あけぼのビル","addr":"東京都豊島区池袋2-5-9","floor":"2F","lat":35.7358426,"lng":139.7084043},{"name":"AmusementBar Pino by SABON","bldg":"徳永第三ビル","addr":"東京都豊島区池袋2-4-6","floor":"3F-C","lat":35.7358426,"lng":139.7084043},{"name":"みつばちマーヤZ","bldg":"第1大谷ビル","addr":"東京都豊島区西池袋1-39-4","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"麻雀チャイナ池袋店","bldg":"TⅡビル","addr":"東京都豊島区東池袋1-2-4","floor":"3F","lat":35.7290721,"lng":139.7209701},{"name":"麺処花田池袋店","bldg":"東池袋ISKビル","addr":"東京都豊島区東池袋1-23-8","floor":"1F","lat":35.7311554,"lng":139.7149383},{"name":"クラブ美南","bldg":"梅本ビル","addr":"東京都豊島区西池袋3-29-3","floor":"2F-C","lat":35.7312086,"lng":139.7066415},{"name":"SECOND","bldg":"大国屋10池袋ビル","addr":"東京都豊島区東池袋1-7-8","floor":"6F","lat":35.7290721,"lng":139.7209701},{"name":"Hello Heaven","bldg":"青井ビル","addr":"東京都豊島区西池袋1-34-5","floor":"3F","lat":35.7301653,"lng":139.709385},{"name":"ミュウミュウ","bldg":"池袋YSステージ","addr":"東京都豊島区西池袋1-38-1","floor":"5F","lat":35.7284313,"lng":139.7017131},{"name":"夢幻泡影","bldg":"第8前島ビル","addr":"東京都豊島区池袋2-12-14","floor":"6F","lat":35.7340006,"lng":139.7088419},{"name":"不死鳥","bldg":"池袋岸野ビル","addr":"東京都豊島区池袋2-13-1","floor":"B1F","lat":35.7358426,"lng":139.7084043},{"name":"Chill","bldg":"梶ビル","addr":"東京都豊島区池袋2-8-5","floor":"B1F","lat":35.7358426,"lng":139.7084043},{"name":"VENUS","bldg":"池袋東通ビル","addr":"東京都豊島区西池袋1-41-3","floor":"4F","lat":35.7301653,"lng":139.709385},{"name":"Bar Mi Casita","bldg":"豊ビル","addr":"東京都豊島区池袋1-1-3","floor":"B1F-A","lat":35.7358426,"lng":139.7084043},{"name":"DAHLIA","bldg":"東京第3ビル","addr":"東京都豊島区東池袋1-13-13","floor":"3F","lat":35.7290721,"lng":139.7209701},{"name":"レガート","bldg":"ザ・バレル池袋ビル","addr":"東京都豊島区池袋2-48-2","floor":"5F","lat":35.7358426,"lng":139.7084043},{"name":"天使.com","bldg":"エスペランザ池袋","addr":"東京都豊島区西池袋1-41-6","floor":"4F","lat":35.7329764,"lng":139.7103618},{"name":"cocotto","bldg":"ウエストコアービル","addr":"東京都豊島区西池袋1-39-1","floor":"6F","lat":35.732838,"lng":139.709672},{"name":"Night Blood","bldg":"十二ビル","addr":"東京都豊島区池袋2-12-13","floor":"5F","lat":35.7358426,"lng":139.7084043},{"name":"ガールズバーリゾートセカンド","bldg":"邦正ビル","addr":"東京都豊島区西池袋1-44-6","floor":"6F・7F","lat":35.7331777,"lng":139.7120551},{"name":"NEW KAWAII","bldg":"池袋東通ビル","addr":"東京都豊島区西池袋1-41-3","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"ポレポレ","bldg":"越路ビル","addr":"","floor":"","lat":35.7358426,"lng":139.7084043},{"name":"Puchimini academy","bldg":"光陽ビル","addr":"東京都豊島区池袋2-13-8","floor":"B1F","lat":35.7358426,"lng":139.7084043},{"name":"おかえりなさい","bldg":"竜崎ビル","addr":"東京都豊島区西池袋1-37-2","floor":"2・3・4F","lat":35.7301653,"lng":139.709385},{"name":"Cantare","bldg":"大晃第8ビル","addr":"東京都豊島区池袋2-10-8","floor":"7F","lat":35.7358426,"lng":139.7084043},{"name":"OLIVE","bldg":"池袋ロイヤルホテル新館","addr":"東京都豊島区池袋2-41-3","floor":"B1F","lat":35.7340006,"lng":139.7088419},{"name":"鏡‐Ⅱ‐","bldg":"フォーレセブンビル","addr":"東京都豊島区東池袋1-28-6","floor":"4F","lat":35.7264933,"lng":139.7160267},{"name":"charmant-シャルマン","bldg":"江戸半第3パレス","addr":"東京都豊島区池袋2-4-3","floor":"6F","lat":35.7358426,"lng":139.7084043},{"name":"ぷんぷりぷいっこ","bldg":"アドワンビル","addr":"東京都豊島区東池袋1-39-2","floor":"B1F","lat":35.732508,"lng":139.714408},{"name":"ブラックキャット","bldg":"梶ビル","addr":"東京都豊島区池袋2-8-5","floor":"7F","lat":35.7358426,"lng":139.7084043},{"name":"Lounge Miccca～ミッカ","bldg":"本州ビル","addr":"","floor":"","lat":35.7358426,"lng":139.7084043},{"name":"CHANGE THE WEST","bldg":"レスタージュ池袋","addr":"東京都豊島区池袋2-48-2","floor":"7F","lat":35.7358426,"lng":139.7084043},{"name":"FORTISSIMO","bldg":"鳥駒総本店ビル","addr":"東京都豊島区東池袋1-7-7","floor":"10F","lat":35.7290721,"lng":139.7209701},{"name":"TRUSS","bldg":"秋福ビル","addr":"東京都豊島区西池袋1-42-8","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"甚","bldg":"岩田ビル","addr":"","floor":"","lat":35.7301653,"lng":139.709385},{"name":"ストーム","bldg":"マキビル","addr":"東京都豊島区西池袋1-41-2","floor":"2F","lat":35.7301653,"lng":139.709385},{"name":"Bar success","bldg":"大晃第3ビル","addr":"東京都豊島区池袋2-10-1","floor":"5F","lat":35.7358426,"lng":139.7084043},{"name":"ゆったか","bldg":"大晃第8ビル","addr":"東京都豊島区池袋2-10-8","floor":"5F・502","lat":35.7358426,"lng":139.7084043},{"name":"エンジェルフェザー","bldg":"三経33ビル","addr":"東京都豊島区東池袋1-4-2","floor":"1F","lat":35.7290721,"lng":139.7209701},{"name":"Bar Greed","bldg":"12ビル","addr":"東京都豊島区池袋2-12-13","floor":"7F","lat":35.7358426,"lng":139.7084043},{"name":"CROSSDRESS","bldg":"第II絆ビル","addr":"東京都豊島区池袋2-47-12","floor":"8F","lat":35.7323296,"lng":139.7208742},{"name":"ヘベレケ","bldg":"叶ビル","addr":"東京都豊島区西池袋1-42-9","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"88 IKEBUKURO","bldg":"第II絆ビル","addr":"東京都豊島区池袋2-47-12","floor":"7F A室","lat":35.7323296,"lng":139.7208742},{"name":"メロディー","bldg":"アユミビル","addr":"東京都豊島区池袋2-11-5","floor":"B1F","lat":35.7358426,"lng":139.7084043},{"name":"クラブルシュ","bldg":"TOP池袋ビル","addr":"東京都豊島区西池袋1-41-5","floor":"1F・2F","lat":35.7301653,"lng":139.709385},{"name":"MIXWILL","bldg":"豊ビル","addr":"東京都豊島区池袋1-1-4","floor":"3F","lat":35.7358426,"lng":139.7084043},{"name":"ラウンジルーナ","bldg":"矢島ビル参番館","addr":"東京都豊島区西池袋1-34-4","floor":"4F","lat":35.7301653,"lng":139.709385},{"name":"ももこカラオケ倶楽部","bldg":"第II絆ビル","addr":"東京都豊島区池袋2-47-12","floor":"3F","lat":35.7323296,"lng":139.7208742},{"name":"ガールズバーふくろう","bldg":"徳永第5ビル","addr":"東京都豊島区池袋2-4-3","floor":"5F-A","lat":35.7358426,"lng":139.7084043},{"name":"RICA","bldg":"玉井ビル","addr":"東京都豊島区東池袋1-42-18","floor":"1F","lat":35.7301653,"lng":139.709385},{"name":"デプロイ","bldg":"豊ビル","addr":"東京都豊島区池袋1-1-3","floor":"B1F","lat":35.7358426,"lng":139.7084043},{"name":"バーエス","bldg":"第II絆ビル","addr":"東京都豊島区池袋2-47-12","floor":"3F","lat":35.7323296,"lng":139.7208742},{"name":"ミュージックバーミルク","bldg":"近代ビル","addr":"東京都豊島区南池袋3-16-8","floor":"1F","lat":35.7301653,"lng":139.709385},{"name":"vividcafe","bldg":"秋福ビル","addr":"東京都豊島区西池袋1-42-8","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"スロぱちコンカフェ池袋店","bldg":"大晃第8ビル","addr":"東京都豊島区池袋2-10-8","floor":"9F","lat":35.7358426,"lng":139.7084043},{"name":"ミリオン","bldg":"ロイヤル西池袋","addr":"東京都豊島区西池袋1-29-3","floor":"3F","lat":35.7301653,"lng":139.709385},{"name":"キミのわがままデビルちゃん","bldg":"鳥駒総本店ビル","addr":"東京都豊島区東池袋1-7-7","floor":"5F","lat":35.7290721,"lng":139.7209701},{"name":"lounge N","bldg":"JPビル","addr":"東京都豊島区西池袋1-37-8","floor":"B1F","lat":35.7301653,"lng":139.709385},{"name":"BAR 7LUCK","bldg":"大晃第8ビル","addr":"東京都豊島区池袋2-10-8","floor":"6F","lat":35.7358426,"lng":139.7084043},{"name":"グランドライン","bldg":"越路ビル","addr":"東京都豊島区池袋2-4-1","floor":"4F","lat":35.7358426,"lng":139.7084043},{"name":"ちとせ会館","bldg":"バレル池袋","addr":"東京都豊島区池袋2-48-2","floor":"2F","lat":35.7358426,"lng":139.7084043}];
+var addrs=[]; (function(){var s={};SHOPS.forEach(function(x){if(x.addr&&!s[x.addr]){s[x.addr]=1;addrs.push(x.addr)}})})();
+var $=function(i){return document.getElementById(i)};
+$('n-shop').textContent=SHOPS.length; $('n-addr').textContent=addrs.length;
+
+var lines=[],okN=0,ngN=0,result={};
+function log(s){lines.push(s);var e=$('log');e.textContent=lines.join('\n');e.scrollTop=e.scrollHeight;$('c-log').style.display='block'}
+
+/* --- Service Worker の状態 --- */
+function swCheck(){
+  if(!('serviceWorker' in navigator)){ $('sw-st').textContent='非対応'; $('sw-n').textContent='0'; return }
+  var ctrl=!!navigator.serviceWorker.controller;
+  $('sw-st').textContent = ctrl ? '通信を横取り中' : '解除済み';
+  $('sw-st').className = ctrl ? 'ng' : 'ok';
+  navigator.serviceWorker.getRegistrations().then(function(rs){
+    $('sw-n').textContent=rs.length+'件';
+    $('sw-n').className = rs.length ? 'wa' : 'ok';
+  });
+}
+swCheck();
+
+$('kill').addEventListener('click',function(){
+  if(!('serviceWorker' in navigator)){alert('この端末は対象外です');return}
+  navigator.serviceWorker.getRegistrations().then(function(rs){
+    return Promise.all(rs.map(function(r){return r.unregister().catch(function(){})}));
+  }).then(function(){
+    if(window.caches&&caches.keys) return caches.keys().then(function(k){return Promise.all(k.map(function(x){return caches.delete(x)}))});
+  }).then(function(){ alert('解除しました。再読み込みします。'); location.reload(true); });
+});
+
+/* --- 変換：地理院 → 失敗時は OpenStreetMap --- */
+function gsi(a){
+  return fetch('https://msearch.gsi.go.jp/address-search/AddressSearch?q='+encodeURIComponent(a))
+   .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json() })
+   .then(function(j){ if(!j||!j.length) return null;
+     var c=j[0].geometry.coordinates; return {lat:c[1],lng:c[0],src:'地理院'} });
+}
+function osm(a){
+  return fetch('https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=jp&q='+encodeURIComponent(a),
+   {headers:{'Accept':'application/json'}})
+   .then(function(r){ if(!r.ok) throw new Error('HTTP '+r.status); return r.json() })
+   .then(function(j){ if(!j||!j.length) return null;
+     return {lat:parseFloat(j[0].lat),lng:parseFloat(j[0].lon),src:'OSM'} });
+}
+function conv(a){
+  return gsi(a).catch(function(e){ log('   地理院NG: '+e.message); return null })
+    .then(function(r){ return r ? r : osm(a).catch(function(e){ log('   OSM NG: '+e.message); return null }) });
+}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms)})}
+
+$('test').addEventListener('click',async function(){
+  log('テスト: '+addrs[0]);
+  var r=await conv(addrs[0]);
+  if(r) log('成功 '+r.lat.toFixed(6)+', '+r.lng.toFixed(6)+'  ('+r.src+')');
+  else log('失敗。上のログの理由を確認してください。');
+});
+
+$('run').addEventListener('click',async function(){
+  this.disabled=true; this.textContent='変換中…';
+  okN=0; ngN=0; result={};
+  log('開始：'+addrs.length+'件');
+  for(var i=0;i<addrs.length;i++){
+    var a=addrs[i];
+    var r=await conv(a);
+    if(r){ result[a]=r; okN++; log('OK  '+a+' → '+r.lat.toFixed(6)+', '+r.lng.toFixed(6)+' ('+r.src+')'); }
+    else { ngN++; log('NG  '+a); }
+    $('n-ok').textContent=okN; $('n-ng').textContent=ngN;
+    $('bar').style.width=Math.round((i+1)/addrs.length*100)+'%';
+    await sleep(1100);
+  }
+  log('完了：成功'+okN+' / 失敗'+ngN);
+  build(); this.textContent='完了';
+});
+
+function build(){
+  var o=[];
+  o.push('# 結果 成功'+okN+' / 失敗'+ngN+' / 住所'+addrs.length+'件');
+  SHOPS.forEach(function(s){
+    if(!s.addr){o.push([s.name,'','','','住所なし'].join('\t'));return}
+    var r=result[s.addr];
+    if(!r){o.push([s.name,s.addr,'','','取得失敗'].join('\t'));return}
+    var inR=r.lat>35.70&&r.lat<35.76&&r.lng>139.68&&r.lng<139.75;
+    o.push([s.name,s.addr,r.lat.toFixed(7),r.lng.toFixed(7),(inR?'高':'要確認')+'/'+r.src].join('\t'));
+  });
+  $('out').value=o.join('\n'); $('c-out').style.display='block';
+}
+$('copy').addEventListener('click',function(){
+  var t=$('out'); t.select(); t.setSelectionRange(0,999999);
+  if(navigator.clipboard) navigator.clipboard.writeText(t.value).then(function(){alert('コピーしました')});
+  else { document.execCommand('copy'); alert('コピーしました'); }
+});
+$('share').addEventListener('click',function(){
+  var b=new Blob([$('out').value],{type:'text/plain'});
+  var f=new File([b],'geocode_result.txt',{type:'text/plain'});
+  if(navigator.share&&navigator.canShare&&navigator.canShare({files:[f]})) navigator.share({files:[f]});
+  else { var u=URL.createObjectURL(b),a=document.createElement('a'); a.href=u; a.download='geocode_result.txt'; a.click(); }
+});
+</script>
+</body>
+</html>
